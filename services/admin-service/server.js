@@ -15,7 +15,12 @@ app.get("/", (req, res) => {
   res.json({ service: "Gerry's Docks Admin Service", status: "running" });
 });
 
+app.get("/healthz", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/admin", adminRouter);
+app.use("/api/admin", adminRouter);
 
 app.use((error, req, res, next) => {
   console.error(error);

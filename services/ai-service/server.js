@@ -15,7 +15,12 @@ app.get("/", (req, res) => {
   res.json({ service: "Gerry's Docks AI Service", status: "running" });
 });
 
+app.get("/healthz", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/ai", aiRouter);
+app.use("/api/ai", aiRouter);
 
 app.use((error, req, res, next) => {
   console.error(error);

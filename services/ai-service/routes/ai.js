@@ -101,64 +101,31 @@ router.post("/", async (req, res) => {
 
   try {
     const client = getClient();
-    const apiResponse = await client.chat.completions.create({
+    const apiResponse = await client.responses.create({
       model: modelName,
-      messages: [{ role: "user", content: assistantPrompt.generatePrompt(text) }],
-      stream: true,
+      input: assistantPrompt.generatePrompt(text),
     });
 
-    let widgetSent = false;
-    let buffer = "";
+    const output = String(apiResponse.output_text || "").trim();
+    const newlineIdx = output.indexOf("\n");
+    const firstLine = newlineIdx === -1 ? output : output.slice(0, newlineIdx).trim();
+    const responseText = newlineIdx === -1 ? output : output.slice(newlineIdx + 1).trim();
 
-    for await (const chunk of apiResponse) {
-      const token = chunk?.choices?.[0]?.delta?.content;
+    writeEvent(res, "widget", parseWidgetLine(firstLine));
 
-      if (!token) {
-        continue;
-      }
-
-      if (!widgetSent) {
-        buffer += token;
-        const newlineIdx = buffer.indexOf("\n");
-
-        if (newlineIdx === -1) {
-          continue;
-        }
-
-        const firstLine = buffer.slice(0, newlineIdx).trim();
-        writeEvent(res, "widget", parseWidgetLine(firstLine));
-        widgetSent = true;
-
-        const rest = buffer.slice(newlineIdx + 1);
-
-        if (rest) {
-          res.write(`data: ${rest}\n\n`);
-        }
-
-        buffer = "";
-        continue;
-      }
-
-      res.write(`data: ${token}\n\n`);
-    }
-
-    if (!widgetSent) {
-      writeEvent(res, "widget", { widget: "none", filter: null });
-
-      if (buffer) {
-        res.write(`data: ${buffer}\n\n`);
-      }
+    if (responseText) {
+      res.write(`data: ${responseText}\n\n`);
     }
 
     res.write("data: [done]\n\n");
     return res.end();
   } catch (error) {
-    console.error(error);
-    return streamLocalFallback(
-      res,
-      text,
-      "OpenAI is unavailable, so a local demo response was used instead."
-    );
+    console.error("AI service error:", error);
+    writeEvent(res, "error", {
+      error: error.message || "AI service request failed",
+    });
+    res.write("data: [done]\n\n");
+    return res.end();
   }
 });
 

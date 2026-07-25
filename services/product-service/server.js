@@ -15,7 +15,12 @@ app.get("/", (req, res) => {
   res.json({ service: "Gerry's Docks Product Service", status: "running" });
 });
 
+app.get("/healthz", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/products", productsRouter);
+app.use("/api/products", productsRouter);
 
 app.use((error, req, res, next) => {
   console.error(error);

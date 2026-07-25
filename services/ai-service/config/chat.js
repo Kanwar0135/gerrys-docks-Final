@@ -1,16 +1,25 @@
+const OpenAI = require("openai");
+
 let client;
 
 function getClient() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is required for the AI assistant");
-  }
+  const foundryEndpoint = process.env.AZURE_FOUNDRY_PROJECT_ENDPOINT;
+  const foundryApiKey = process.env.AZURE_FOUNDRY_API_KEY;
+  const openAiApiKey = process.env.OPENAI_API_KEY;
 
   if (!client) {
-    const OpenAI = require("openai");
-
-    client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    if (foundryEndpoint && foundryApiKey) {
+      client = new OpenAI({
+        apiKey: foundryApiKey,
+        baseURL: `${foundryEndpoint.replace(/\/$/, "")}/openai/v1`,
+      });
+    } else if (openAiApiKey) {
+      client = new OpenAI({
+        apiKey: openAiApiKey,
+      });
+    } else {
+      throw new Error("AI API key is missing. Add AZURE_FOUNDRY_API_KEY or OPENAI_API_KEY to ai-service/.env");
+    }
   }
 
   return client;

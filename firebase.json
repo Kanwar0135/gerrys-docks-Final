@@ -1,0 +1,44 @@
+{
+  "hosting": {
+    "public": "frontend",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/products{,/**}",
+        "run": {
+          "serviceId": "gerrys-products",
+          "region": "us-west1",
+          "pinTag": true
+        }
+      },
+      {
+        "source": "/api/quotes{,/**}",
+        "run": {
+          "serviceId": "gerrys-quotes",
+          "region": "us-west1",
+          "pinTag": true
+        }
+      },
+      {
+        "source": "/api/admin{,/**}",
+        "run": {
+          "serviceId": "gerrys-admin",
+          "region": "us-west1",
+          "pinTag": true
+        }
+      },
+      {
+        "source": "/api/ai{,/**}",
+        "run": {
+          "serviceId": "gerrys-ai",
+          "region": "us-west1",
+          "pinTag": true
+        }
+      }
+    ]
+  }
+}

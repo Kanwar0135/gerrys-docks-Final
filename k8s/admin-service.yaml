@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-service
+  template:
+    metadata:
+      labels:
+        app: admin-service
+    spec:
+      containers:
+        - name: admin-service
+          image: gerrydocksacr.azurecr.io/admin-service:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5003
+          envFrom:
+            - secretRef:
+                name: gerrys-docks-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+spec:
+  type: ClusterIP
+  selector:
+    app: admin-service
+  ports:
+    - port: 5003
+      targetPort: 5003

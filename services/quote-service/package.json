@@ -17,6 +17,7 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "firebase-admin": "^12.7.0",
+    "jsonwebtoken": "^9.0.3",
     "openai": "^4.104.0"
   }
 }
