@@ -24,6 +24,15 @@ function writeEvent(res, event, data) {
   res.write(`data: ${JSON.stringify(data)}\n\n`);
 }
 
+function writeData(res, text) {
+  String(text || "")
+    .split(/\r?\n/)
+    .forEach((line) => {
+      res.write(`data: ${line}\n`);
+    });
+  res.write("\n");
+}
+
 function getLocalFallback(text) {
   const message = text.toLowerCase();
 
@@ -80,7 +89,7 @@ function streamLocalFallback(res, text, reason) {
   });
 
   res.write(`event: notice\ndata: ${JSON.stringify({ message: reason })}\n\n`);
-  res.write(`data: ${fallback.response}\n\n`);
+  writeData(res, fallback.response);
   res.write("data: [done]\n\n");
   return res.end();
 }
@@ -114,7 +123,7 @@ router.post("/", async (req, res) => {
     writeEvent(res, "widget", parseWidgetLine(firstLine));
 
     if (responseText) {
-      res.write(`data: ${responseText}\n\n`);
+      writeData(res, responseText);
     }
 
     res.write("data: [done]\n\n");
