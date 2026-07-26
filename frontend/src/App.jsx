@@ -120,7 +120,17 @@ function NavigationBar() {
         boxShadow: isScrolled ? '0 4px 12px rgba(0,0,0,0.25)' : 'none'
       }}>
         {/* Brand Logo Area */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Link
+          to="/"
+          aria-label="Go to Gerry's Docks homepage"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textDecoration: 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={{
             backgroundColor: 'var(--timber-accent, #C25E14)',
             width: isScrolled ? '32px' : '40px',
@@ -146,7 +156,7 @@ function NavigationBar() {
           }}>
             GERRY'S DOCKS
           </span>
-        </div>
+        </Link>
 
         {/* Navigation Links, Theme Switcher & Sign In Button */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
