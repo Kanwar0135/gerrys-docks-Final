@@ -3,6 +3,18 @@ import { useLocation } from 'react-router-dom';
 
 const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL || 'http://localhost:5002/api/quotes';
 
+function isValidNorthAmericanPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+
+  if (normalized.length !== 10) return false;
+  if (/^(\d)\1{9}$/.test(normalized)) return false;
+  if (normalized[0] === '0' || normalized[0] === '1') return false;
+  if (normalized[3] === '0' || normalized[3] === '1') return false;
+
+  return true;
+}
+
 const PRODUCT_PRICING = {
   'dock-sec-16': { name: "Straight Walkway Section (8' x 16')", basePrice: 2450 },
   'dock-lay-l': { name: 'L-Shape Patio Expansion Unit', basePrice: 4800 },
@@ -126,8 +138,14 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setSubmitStatus('');
+
+    if (!isValidNorthAmericanPhone(clientPhone)) {
+      setSubmitStatus('Please enter a valid 10-digit phone number, such as (705) 477-2872.');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const selectedProductData = PRODUCT_PRICING[selectedProduct] || PRODUCT_PRICING.custom;
     const fullLocation = [streetAddress, city, province, postalCode, country]
@@ -538,9 +556,11 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                   <input
                     type="tel"
                     required
-                    placeholder="(123) 456-7890"
+                    placeholder="(705) 477-2872"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
+                    pattern="^(\\+?1[\\s.-]?)?(\\(?[2-9][0-9]{2}\\)?[\\s.-]?)[2-9][0-9]{2}[\\s.-]?[0-9]{4}$"
+                    title="Enter a valid 10-digit phone number, such as (705) 477-2872."
                     style={inputStyle}
                   />
                 </div>

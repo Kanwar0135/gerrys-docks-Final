@@ -5,6 +5,18 @@ const { createQuote, getAllQuotes } = require("../services/quoteService");
 
 const router = express.Router();
 
+function isValidNorthAmericanPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  const normalized = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  if (normalized.length !== 10) return false;
+  if (/^(\d)\1{9}$/.test(normalized)) return false;
+  if (normalized[0] === "0" || normalized[0] === "1") return false;
+  if (normalized[3] === "0" || normalized[3] === "1") return false;
+
+  return true;
+}
+
 function validateQuote(quoteData) {
   const contact = quoteData.contact || {};
   const customerName = quoteData.customerName || contact.name;
@@ -18,6 +30,10 @@ function validateQuote(quoteData) {
 
   if (!email.includes("@")) {
     return "Valid email is required";
+  }
+
+  if (!isValidNorthAmericanPhone(phone)) {
+    return "Valid 10-digit phone number is required";
   }
 
   if (!Array.isArray(quoteData.items) || quoteData.items.length === 0) {
