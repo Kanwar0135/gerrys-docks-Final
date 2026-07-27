@@ -1,5 +1,6 @@
 const { auth } = require("../services/firebase");
 const { getAdminByEmail } = require("../services/adminService");
+const jwt = require("jsonwebtoken");
 
 async function requireAdmin(req, res, next) {
   try {
@@ -8,6 +9,20 @@ async function requireAdmin(req, res, next) {
 
     if (!token) {
       return res.status(401).json({ error: "Missing auth token" });
+    }
+
+    if (process.env.JWT_SECRET) {
+      try {
+        const decodedLocalToken = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (decodedLocalToken?.provider === "local-admin" && decodedLocalToken?.role === "admin") {
+          req.user = decodedLocalToken;
+          req.adminUser = decodedLocalToken;
+          return next();
+        }
+      } catch (localTokenError) {
+        // Not a local admin token; continue with Firebase token verification.
+      }
     }
 
     const decodedToken = await auth.verifyIdToken(token);
