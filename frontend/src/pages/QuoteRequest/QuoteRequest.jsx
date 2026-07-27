@@ -63,6 +63,16 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionRef = useRef(null);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === 'undefined' ? 1200 : window.innerWidth
+  );
+
+  const isMobile = viewportWidth < 720;
+  const isTablet = viewportWidth >= 720 && viewportWidth < 980;
+  const optionGridColumns = isMobile ? '1fr' : isTablet ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))';
+  const mainGridColumns = viewportWidth < 980 ? '1fr' : 'minmax(0, 1fr) 380px';
+  const addressGridColumns = isMobile ? '1fr' : 'minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)';
+  const twoColumnGrid = isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))';
 
   // Extract initial product from URL search params
   useEffect(() => {
@@ -82,6 +92,15 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      setViewportWidth(window.innerWidth);
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Handle address input typing
@@ -248,12 +267,12 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-main, #071626)', minHeight: '100vh', padding: '40px 20px', fontFamily: 'sans-serif', color: 'var(--text-main, #E2E8F0)', transition: 'background-color 0.3s ease' }}>
+    <div style={{ backgroundColor: 'var(--bg-main, #071626)', minHeight: '100vh', padding: isMobile ? '24px 12px' : '40px 20px', fontFamily: 'sans-serif', color: 'var(--text-main, #E2E8F0)', transition: 'background-color 0.3s ease' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         {/* Header Block */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ color: '#FFFFFF', fontSize: '36px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '1px' }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '40px' }}>
+          <h1 style={{ color: '#FFFFFF', fontSize: isMobile ? '28px' : '36px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '1px', lineHeight: 1.1 }}>
             INTERACTIVE QUOTE CONFIGURATOR
           </h1>
           <p style={{ color: 'var(--text-muted, #94A3B8)', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
@@ -261,10 +280,10 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '30px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: mainGridColumns, gap: isMobile ? '18px' : '30px', alignItems: 'start' }}>
           
           {/* CONFIGURATION FORM */}
-          <form onSubmit={handleSubmit} style={{ backgroundColor: 'var(--card-bg, #0F253F)', padding: '40px', borderRadius: '10px', border: '1px solid var(--border-color, #1E3A5F)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          <form onSubmit={handleSubmit} style={{ backgroundColor: 'var(--card-bg, #0F253F)', padding: isMobile ? '20px' : '40px', borderRadius: '10px', border: '1px solid var(--border-color, #1E3A5F)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', gap: isMobile ? '24px' : '30px', minWidth: 0 }}>
             
             {/* Step 1: Base Platform */}
             <div>
@@ -292,7 +311,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               <p style={{ color: 'var(--text-muted, #94A3B8)', fontSize: '13px', margin: '-10px 0 15px 0' }}>
                 Select the option that matches your lakebed environment to ensure proper leg anchoring.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: optionGridColumns, gap: '15px' }}>
                 {[
                   { id: 'sand', label: 'Sandy / Solid', desc: 'Standard support' },
                   { id: 'muck', label: 'Muddy / Muck', desc: 'Silt mud (+ $450)' },
@@ -341,7 +360,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               <h3 style={sectionHeaderStyle}>
                 3. Water-Depth Profile
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: optionGridColumns, gap: '15px' }}>
                 {[
                   { id: 'shallow', label: 'Shallow (<4ft)', desc: 'Standard legs' },
                   { id: 'deep', label: 'Deep (4ft - 9ft)', desc: 'Braced columns (+ $600)' },
@@ -390,7 +409,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               <h3 style={sectionHeaderStyle}>
                 4. Select Premium Accessories
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: optionGridColumns, gap: '15px' }}>
                 {[
                   { id: 'cleats', label: 'Tie-Up Cleats', price: '+$120', desc: '4x marine cast nylon' },
                   { id: 'bumpers', label: 'Vertical Bumpers', price: '+$280', desc: 'Polyester shock guards' },
@@ -492,7 +511,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               </div>
 
               {/* Grid Layout for Detailed Fields */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: addressGridColumns, gap: '15px', marginBottom: '15px' }}>
                 <div>
                   <label style={labelStyle}>Street Name / Number</label>
                   <input
@@ -528,7 +547,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px' }}>
                 <div>
                   <label style={labelStyle}>Postal / ZIP Code</label>
                   <input
@@ -559,7 +578,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               <h3 style={sectionHeaderStyle}>
                 6. Project Review Details
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px', marginBottom: '15px' }}>
                 <div>
                   <label style={labelStyle}>Contact Name</label>
                   <input
@@ -645,14 +664,14 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
           </form>
 
           {/* DYNAMIC ESTIMATE PANEL (Sticky sidebar) */}
-          <div style={{ position: 'sticky', top: '100px', backgroundColor: 'var(--card-bg, #0B1D33)', color: 'var(--text-main, #FFFFFF)', padding: '30px', borderRadius: '10px', border: '1px solid var(--border-color, #1E3A5F)', borderLeft: '6px solid #C25E14', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
+          <div style={{ position: viewportWidth < 980 ? 'static' : 'sticky', top: '100px', backgroundColor: 'var(--card-bg, #0B1D33)', color: 'var(--text-main, #FFFFFF)', padding: isMobile ? '22px' : '30px', borderRadius: '10px', border: '1px solid var(--border-color, #1E3A5F)', borderLeft: '6px solid #C25E14', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', minWidth: 0 }}>
             <h3 style={{ margin: '0 0 5px 0', fontSize: '20px', fontWeight: '800' }}>Layout Summary</h3>
             <span style={{ fontSize: '11px', color: 'var(--text-muted, #94A3B8)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
               Preliminary Quote Estimate
             </span>
 
             {/* Large Price Display */}
-            <div style={{ fontSize: '42px', fontWeight: '900', color: '#C25E14', margin: '15px 0' }}>
+            <div style={{ fontSize: isMobile ? '34px' : '42px', fontWeight: '900', color: '#C25E14', margin: '15px 0' }}>
               ${totalEstimate.toLocaleString()}
             </div>
 
