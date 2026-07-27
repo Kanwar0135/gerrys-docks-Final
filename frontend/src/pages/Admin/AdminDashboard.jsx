@@ -74,6 +74,20 @@ const AdminDashboard = () => {
   });
   const [editingProductId, setEditingProductId] = useState('');
   const [productMessage, setProductMessage] = useState('');
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === 'undefined' ? 1200 : window.innerWidth
+  );
+
+  const isMobile = viewportWidth < 720;
+  const isTablet = viewportWidth >= 720 && viewportWidth < 1040;
+  const adminShellDirection = viewportWidth < 900 ? 'column' : 'row';
+  const sidebarWidth = viewportWidth < 900 ? '100%' : '280px';
+  const productFormColumns = isMobile
+    ? '1fr'
+    : isTablet
+      ? 'repeat(2, minmax(0, 1fr))'
+      : 'minmax(0, 1.1fr) minmax(0, 0.7fr) minmax(0, 0.5fr) minmax(0, 1.4fr) auto';
+  const contentGridColumns = viewportWidth < 1100 ? '1fr' : 'minmax(0, 2.5fr) minmax(260px, 1fr)';
 
   const getAdminToken = () => localStorage.getItem('gerrysAdminToken');
 
@@ -132,6 +146,15 @@ const AdminDashboard = () => {
       loadQuotes(savedToken);
       loadProducts();
     }
+  }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      setViewportWidth(window.innerWidth);
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -340,7 +363,7 @@ const AdminDashboard = () => {
   if (!isAuthenticated) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B1D33', fontFamily: 'sans-serif', padding: '20px', boxSizing: 'border-box' }}>
-        <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '8px', maxWidth: '400px', width: '100%', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', boxSizing: 'border-box' }}>
+        <div style={{ backgroundColor: 'white', padding: isMobile ? '26px 20px' : '40px', borderRadius: '8px', maxWidth: '400px', width: '100%', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', boxSizing: 'border-box' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h2 style={{ color: '#0B1D33', margin: '0 0 5px 0', fontSize: '28px', fontWeight: '800' }}>Gerry's Docks</h2>
@@ -433,10 +456,10 @@ const AdminDashboard = () => {
 
   // --- RENDER 2: MAIN ADMIN CONSOLE SCREEN ---
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100%', fontFamily: 'sans-serif', backgroundColor: '#F4F7FA' }}>
+    <div style={{ display: 'flex', flexDirection: adminShellDirection, minHeight: '100vh', width: '100%', fontFamily: 'sans-serif', backgroundColor: '#F4F7FA' }}>
       
       {/* Absolute Full Height Left Navigation Column Panel */}
-      <div style={{ width: '280px', backgroundColor: '#0B1D33', color: '#A0AEC0', padding: '40px 25px', display: 'flex', flexDirection: 'column', gap: '25px', flexShrink: 0 }}>
+      <div style={{ width: sidebarWidth, backgroundColor: '#0B1D33', color: '#A0AEC0', padding: isMobile ? '24px 18px' : '40px 25px', display: 'flex', flexDirection: 'column', gap: isMobile ? '18px' : '25px', flexShrink: 0, boxSizing: 'border-box' }}>
         <div>
           <h2 style={{ color: 'white', margin: '0 0 5px 0', fontSize: '24px', fontWeight: '800' }}>Gerry's Docks</h2>
           <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Admin Console</span>
@@ -526,14 +549,14 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Console Content Workspace */}
-      <div style={{ flex: 1, padding: '50px 40px', boxSizing: 'border-box', overflowY: 'auto' }}>
+      <div style={{ flex: 1, padding: isMobile ? '24px 14px' : isTablet ? '34px 24px' : '50px 40px', boxSizing: 'border-box', overflowY: 'auto', minWidth: 0 }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', borderBottom: '1px solid #E2E8F0', paddingBottom: '25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', marginBottom: isMobile ? '26px' : '40px', borderBottom: '1px solid #E2E8F0', paddingBottom: '25px', gap: '16px', flexDirection: isMobile ? 'column' : 'row' }}>
           <div>
-            <h1 style={{ color: '#0B1D33', margin: 0, fontSize: '32px', fontWeight: '800' }}>Harbor Dashboard</h1>
+            <h1 style={{ color: '#0B1D33', margin: 0, fontSize: isMobile ? '26px' : '32px', fontWeight: '800' }}>Harbor Dashboard</h1>
             <p style={{ color: '#718096', margin: '5px 0 0 0', fontSize: '15px' }}>Monitoring operations and logistics for Gerry's Docks North & South.</p>
           </div>
-          <div style={{ display: 'flex', gap: '15px' }}>
+          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
             <div style={{ backgroundColor: '#E2E8F0', padding: '12px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', color: '#4A5568' }}>JUL 16, 2026</div>
             <div style={{ backgroundColor: '#EBF8FF', padding: '12px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', color: '#2B6CB0' }}>TIDE: HIGH (1.4m)</div>
           </div>
@@ -568,7 +591,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Product Management Panel */}
-        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '30px', boxShadow: '0 4px 6px rgba(0,0,0,0.01)' }}>
+        <div style={{ backgroundColor: 'white', padding: isMobile ? '18px' : '25px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '30px', boxShadow: '0 4px 6px rgba(0,0,0,0.01)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ margin: '0 0 6px 0', color: '#0B1D33', fontSize: '20px', fontWeight: '800' }}>Product Catalog Management</h3>
@@ -589,7 +612,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          <form onSubmit={handleSaveProduct} style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.7fr 0.5fr 1.4fr auto', gap: '12px', alignItems: 'end', marginBottom: '20px' }}>
+          <form onSubmit={handleSaveProduct} style={{ display: 'grid', gridTemplateColumns: productFormColumns, gap: '12px', alignItems: 'end', marginBottom: '20px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>Product Name</label>
               <input
@@ -633,7 +656,7 @@ const AdminDashboard = () => {
             </div>
             <button
               type="submit"
-              style={{ padding: '11px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#C25E14', color: 'white', fontWeight: '800', cursor: 'pointer' }}
+              style={{ padding: '11px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#C25E14', color: 'white', fontWeight: '800', cursor: 'pointer', width: isMobile ? '100%' : 'auto' }}
             >
               {editingProductId ? 'Update' : 'Add'}
             </button>
@@ -683,17 +706,17 @@ const AdminDashboard = () => {
         </div>
 
         {/* Dynamic Filters Bar */}
-        <div style={{ backgroundColor: 'white', padding: '20px 25px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '25px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: '15px', flex: 1, minWidth: '300px' }}>
+        <div style={{ backgroundColor: 'white', padding: isMobile ? '16px' : '20px 25px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '25px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '15px', flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
             <input 
               type="text" 
               placeholder="Search quotes by client, location, or dock variant..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ flex: 1, padding: '10px 15px', borderRadius: '6px', border: '1px solid #CBD5E0', fontSize: '14px', outline: 'none' }}
+              style={{ flex: 1, width: '100%', padding: '10px 15px', borderRadius: '6px', border: '1px solid #CBD5E0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: isMobile ? 'stretch' : 'center', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
             <button
               type="button"
               onClick={() => loadQuotes(getAdminToken())}
@@ -706,7 +729,8 @@ const AdminDashboard = () => {
                 color: '#0B1D33',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                cursor: isLoadingQuotes ? 'not-allowed' : 'pointer'
+                cursor: isLoadingQuotes ? 'not-allowed' : 'pointer',
+                width: isMobile ? '100%' : 'auto'
               }}
             >
               {isLoadingQuotes ? 'Refreshing...' : 'Refresh Quotes'}
@@ -715,7 +739,7 @@ const AdminDashboard = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '10px 15px', borderRadius: '6px', border: '1px solid #CBD5E0', fontSize: '14px', backgroundColor: '#FFFFFF', outline: 'none', fontWeight: 'bold', color: '#1A202C', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+              style={{ padding: '10px 15px', borderRadius: '6px', border: '1px solid #CBD5E0', fontSize: '14px', backgroundColor: '#FFFFFF', outline: 'none', fontWeight: 'bold', color: '#1A202C', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', width: isMobile ? '100%' : 'auto' }}
             >
               <option value="ALL">All Statuses</option>
               <option value="PENDING">Pending Only</option>
@@ -726,10 +750,10 @@ const AdminDashboard = () => {
         </div>
 
         {/* Main split grid panel content view */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr', gap: '30px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: contentGridColumns, gap: isMobile ? '18px' : '30px', alignItems: 'start' }}>
           
           {/* Table Card Panel */}
-          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px rgba(0,0,0,0.01)' }}>
+          <div style={{ backgroundColor: 'white', padding: isMobile ? '18px' : '30px', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px rgba(0,0,0,0.01)', minWidth: 0 }}>
             <h3 style={{ margin: '0 0 20px 0', color: '#0B1D33', fontSize: '20px', fontWeight: '800' }}>Recent Inbound System Quotes</h3>
             {isLoadingQuotes && (
               <div style={{ backgroundColor: '#EBF8FF', color: '#2B6CB0', padding: '12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', marginBottom: '15px' }}>
@@ -815,7 +839,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Critical Alerts Sidebar card */}
-          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px rgba(0,0,0,0.01)' }}>
+          <div style={{ backgroundColor: 'white', padding: isMobile ? '18px' : '30px', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px rgba(0,0,0,0.01)', minWidth: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
               <h4 style={{ margin: 0, color: '#0B1D33', fontSize: '16px', fontWeight: '800' }}>Critical Alerts</h4>
               <span style={{ backgroundColor: '#FED7D7', color: '#9B2C2C', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>STOCK WARNING</span>
