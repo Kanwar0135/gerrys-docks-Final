@@ -124,6 +124,25 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
   };
 
+  const resetQuoteForm = () => {
+    setSelectedProduct('custom');
+    setSubstrate('');
+    setWaterDepth('shallow');
+    setSelectedAccessories([]);
+    setAdditionalNotes('');
+    setClientName('');
+    setClientEmail('');
+    setClientPhone('');
+    setSearchAddress('');
+    setStreetAddress('');
+    setCity('');
+    setProvince('');
+    setPostalCode('');
+    setCountry('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   // Calculate live dynamic estimate
   const base = PRODUCT_PRICING[selectedProduct]?.basePrice || 3000;
   const substrateSurcharge = substrate === 'muck' || substrate === 'rock' ? 450 : 0;
@@ -188,6 +207,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
       }
 
       setSubmitStatus(`Quote request submitted. Preliminary estimate: $${totalEstimate.toLocaleString()}.`);
+      resetQuoteForm();
     } catch (error) {
       setSubmitStatus(error.message || 'Unable to submit quote request. Please check quote-service.');
     } finally {
