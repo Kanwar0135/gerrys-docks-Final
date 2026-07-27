@@ -134,6 +134,32 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+
+    const refreshQuotes = () => {
+      const token = getAdminToken();
+      if (token) {
+        loadQuotes(token);
+      }
+    };
+
+    const intervalId = window.setInterval(refreshQuotes, 15000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshQuotes();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAuthenticated]);
+
   // Handle Admin Login Verification
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -668,6 +694,23 @@ const AdminDashboard = () => {
             />
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => loadQuotes(getAdminToken())}
+              disabled={isLoadingQuotes}
+              style={{
+                padding: '10px 15px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E0',
+                backgroundColor: isLoadingQuotes ? '#E2E8F0' : '#FFFFFF',
+                color: '#0B1D33',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                cursor: isLoadingQuotes ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoadingQuotes ? 'Refreshing...' : 'Refresh Quotes'}
+            </button>
             <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#4A5568' }}>Filter Status:</span>
             <select
               value={statusFilter}
