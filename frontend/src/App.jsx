@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 
 import Homepage from './pages/Homepage/Homepage';
 import Products from './pages/Products/Products';
@@ -33,6 +33,7 @@ function NavigationBar() {
 
   // Router location hook to track active page
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Handle header shrinking on scroll
   useEffect(() => {
@@ -46,6 +47,32 @@ function NavigationBar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleKeyboardNavigation = (event) => {
+      const targetTag = event.target?.tagName?.toLowerCase();
+      const isTyping = ['input', 'textarea', 'select'].includes(targetTag);
+
+      if (!event.altKey || isTyping) return;
+
+      const shortcuts = {
+        h: '/',
+        c: '/products',
+        p: '/specs',
+        q: '/quote',
+        a: '/admin',
+      };
+
+      const path = shortcuts[event.key.toLowerCase()];
+      if (!path) return;
+
+      event.preventDefault();
+      navigate(path);
+    };
+
+    window.addEventListener('keydown', handleKeyboardNavigation);
+    return () => window.removeEventListener('keydown', handleKeyboardNavigation);
+  }, [navigate]);
 
   const handleAuthSubmit = (e) => {
     e.preventDefault();
@@ -102,6 +129,9 @@ function NavigationBar() {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       {/* SOLID FIXED HEADER */}
       <header style={{
         position: 'fixed',
@@ -549,7 +579,7 @@ function App() {
     <BrowserRouter>
       <NavigationBar />
       {/* TOP PADDING */}
-      <div style={{ paddingTop: '80px' }}>
+      <main id="main-content" tabIndex="-1" style={{ paddingTop: '80px' }}>
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/products" element={<Products />} />
@@ -557,7 +587,7 @@ function App() {
           <Route path="/quote" element={<QuoteRequest />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
-      </div>
+      </main>
       <AIAssistant />
     </BrowserRouter>
   );
