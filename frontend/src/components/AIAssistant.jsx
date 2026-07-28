@@ -204,7 +204,8 @@ export default function AIAssistant() {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        aria-label="Open AI assistant"
+        aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
+        title={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
         style={{
           width: '64px',
           height: '64px',
@@ -214,11 +215,43 @@ export default function AIAssistant() {
           color: 'white',
           boxShadow: '0 10px 24px rgba(0,0,0,0.3)',
           cursor: 'pointer',
-          fontSize: '24px',
-          fontWeight: '900',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
         }}
       >
-        AI
+        <svg
+          aria-hidden="true"
+          width="42"
+          height="42"
+          viewBox="0 0 64 64"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M14 36v-7c0-10.5 8-18.5 18-18.5s18 8 18 18.5v7"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <rect x="6" y="29" width="12" height="19" rx="5" fill="currentColor" />
+          <rect x="46" y="29" width="12" height="19" rx="5" fill="currentColor" />
+          <path
+            d="M46 45c0 6-4 9-10 9h-5"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <rect x="24" y="49" width="13" height="8" rx="4" fill="currentColor" />
+          <path
+            d="M22 30c0-4 3.2-7 7.2-6.1l2.8.6 2.8-.6C38.8 23 42 26 42 30v6.3c0 2.4-2.2 4.2-4.6 3.7l-3.8-.8a8 8 0 0 0-3.2 0l-3.8.8c-2.4.5-4.6-1.3-4.6-3.7V30Z"
+            fill="currentColor"
+            opacity="0.92"
+          />
+          <circle cx="28" cy="32" r="2.5" fill="#C25E14" />
+          <circle cx="36" cy="32" r="2.5" fill="#C25E14" />
+        </svg>
       </button>
     </div>
   );
