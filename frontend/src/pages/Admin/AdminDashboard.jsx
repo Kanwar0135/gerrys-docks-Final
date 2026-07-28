@@ -4,13 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const ADMIN_API_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:5003/api/admin';
 const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL || 'http://localhost:5002/api/quotes';
 const PRODUCT_API_URL = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:5001/api/products';
-
-// Seed initial dashboard data matching products and custom layouts
-const INITIAL_QUOTES = [
-  { id: 1, customer: 'Robert J. Sterling', location: 'McQuaby Lake, ON', dockType: 'Tundra Seasonal Rolling System (16ft)', basePrice: 3950, status: 'PENDING', date: '2026-07-12' },
-  { id: 2, customer: 'Marsha Whitaker', location: 'Silver Harbor, BC', dockType: 'Cascade Heavy Floating Section (16ft)', basePrice: 4800, status: 'UNDER REVIEW', date: '2026-07-15' },
-  { id: 3, customer: 'Moin Multani', location: '1301 16 Ave NW, Calgary, AB', dockType: 'Fully Custom Layout Design', basePrice: 3000, status: 'APPROVED', date: '2026-07-16' }
-];
+const AUTH_ERROR_STATUSES = new Set([401, 403]);
 
 function formatQuoteDate(createdAt) {
   if (!createdAt) return new Date().toISOString().slice(0, 10);
@@ -60,7 +54,7 @@ const AdminDashboard = () => {
 
   // Dashboard operation state
   const [isHovered, setIsHovered] = useState(false);
-  const [quotes, setQuotes] = useState(INITIAL_QUOTES);
+  const [quotes, setQuotes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [products, setProducts] = useState([]);
@@ -90,6 +84,18 @@ const AdminDashboard = () => {
   const contentGridColumns = viewportWidth < 1100 ? '1fr' : 'minmax(0, 2.5fr) minmax(260px, 1fr)';
 
   const getAdminToken = () => localStorage.getItem('gerrysAdminToken');
+
+  const clearAdminSession = (message = 'Admin session expired. Please sign in again.') => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('gerrysAdminToken');
+    localStorage.removeItem('gerrysAdminEmail');
+    setPassword('');
+    setShowPassword(false);
+    setQuoteLoadError('');
+    setProductMessage('');
+    setQuotes([]);
+    setLoginError(message);
+  };
 
   const loadProducts = async () => {
     try {
@@ -123,14 +129,19 @@ const AdminDashboard = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (AUTH_ERROR_STATUSES.has(response.status)) {
+          clearAdminSession('Admin session expired. Please sign in again.');
+          return;
+        }
+
         throw new Error(data.error || 'Unable to load quote requests.');
       }
 
       const backendQuotes = Array.isArray(data) ? data.map(mapBackendQuote) : [];
-      setQuotes(backendQuotes.length > 0 ? backendQuotes : INITIAL_QUOTES);
+      setQuotes(backendQuotes);
     } catch (error) {
-      setQuoteLoadError(`${error.message} Showing sample quotes for now.`);
-      setQuotes(INITIAL_QUOTES);
+      setQuoteLoadError(error.message || 'Unable to load quote requests.');
+      setQuotes([]);
     } finally {
       setIsLoadingQuotes(false);
     }
@@ -228,7 +239,7 @@ const AdminDashboard = () => {
     setPassword('');
     setShowPassword(false);
     setQuoteLoadError('');
-    setQuotes(INITIAL_QUOTES);
+    setQuotes([]);
   };
 
   const resetProductForm = () => {
@@ -286,6 +297,11 @@ const AdminDashboard = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (AUTH_ERROR_STATUSES.has(response.status)) {
+          clearAdminSession('Admin session expired. Please sign in again before changing products.');
+          return;
+        }
+
         throw new Error(data.error || 'Unable to save product.');
       }
 
@@ -317,6 +333,11 @@ const AdminDashboard = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (AUTH_ERROR_STATUSES.has(response.status)) {
+          clearAdminSession('Admin session expired. Please sign in again before changing products.');
+          return;
+        }
+
         throw new Error(data.error || 'Unable to delete product.');
       }
 
