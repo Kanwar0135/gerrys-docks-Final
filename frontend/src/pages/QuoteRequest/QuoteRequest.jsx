@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL || 'http://localhost:5002/api/quotes';
@@ -25,15 +25,6 @@ const PRODUCT_PRICING = {
   'custom': { name: 'Fully Custom Layout Design', basePrice: 3000 }
 };
 
-// Mock Address Database for immediate visual autocomplete suggestions (Simulating Google Places API)
-const MOCK_ADDRESS_SUGGESTIONS = [
-  { street: '1301 16 Ave NW', city: 'Calgary', state: 'AB', zip: 'T2M 0L4', country: 'Canada' },
-  { street: '115 Front St', city: 'Toronto', state: 'ON', zip: 'M5J 2T6', country: 'Canada' },
-  { street: '1600 Amphitheatre Pkwy', city: 'Mountain View', state: 'CA', zip: '94043', country: 'USA' },
-  { street: '742 Evergreen Terrace', city: 'Springfield', state: 'IL', zip: '62704', country: 'USA' },
-  { street: '100 Reservoir Road', city: 'Vernon', state: 'BC', zip: 'V1B 3M6', country: 'Canada' }
-];
-
 export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const location = useLocation();
   
@@ -51,18 +42,14 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const [submitStatus, setSubmitStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Comprehensive Multi-column Address State
-  const [searchAddress, setSearchAddress] = useState('');
+  // Address State
   const [streetAddress, setStreetAddress] = useState('');
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
+  const [verifiedAddress, setVerifiedAddress] = useState('');
   
-  // Autocomplete suggestions UI control
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionRef = useRef(null);
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth
   );
@@ -83,17 +70,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
   }, [location]);
 
-  // Close suggestions if clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   useEffect(() => {
     function handleResize() {
       setViewportWidth(window.innerWidth);
@@ -102,37 +78,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Handle address input typing
-  const handleAddressChange = (e) => {
-    const value = e.target.value;
-    setSearchAddress(value);
-    setStreetAddress(value); // Keep primary input in sync initially
-
-    if (value.trim().length > 2) {
-      // Filter mock database to match what they are writing
-      const filtered = MOCK_ADDRESS_SUGGESTIONS.filter(item => 
-        item.street.toLowerCase().includes(value.toLowerCase()) ||
-        item.city.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-
-  // When a suggested address is clicked, populate all fields instantly
-  const handleSelectSuggestion = (suggestion) => {
-    setSearchAddress(suggestion.street);
-    setStreetAddress(suggestion.street);
-    setCity(suggestion.city);
-    setProvince(suggestion.state);
-    setPostalCode(suggestion.zip);
-    setCountry(suggestion.country);
-    setShowSuggestions(false);
-  };
 
   // Handle Accessory multi-select toggle
   const toggleAccessory = (accId) => {
@@ -152,14 +97,12 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     setClientName('');
     setClientEmail('');
     setClientPhone('');
-    setSearchAddress('');
     setStreetAddress('');
     setCity('');
     setProvince('');
     setPostalCode('');
     setCountry('');
-    setSuggestions([]);
-    setShowSuggestions(false);
+    setVerifiedAddress('');
   };
 
   // Calculate live dynamic estimate
@@ -174,6 +117,31 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   }, 0);
   const totalEstimate = base + substrateSurcharge + depthSurcharge + accessoriesTotal;
 
+  const validateAddress = async () => {
+    try {
+      const response = await fetch(
+        `https://addressvalidation.googleapis.com/v1:validateAddress?key=${import.meta.env.VITE_GOOGLE_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: {
+              regionCode: country || 'CA',
+              addressLines: [streetAddress, city, province, postalCode].filter(Boolean),
+            },
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.result?.address?.formattedAddress) {
+        setVerifiedAddress(data.result.address.formattedAddress);
+      }
+    } catch (error) {
+      console.error('Address validation error:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitStatus('');
@@ -184,6 +152,9 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
 
     setIsSubmitting(true);
+
+    // Run address validation check before submitting quote
+    await validateAddress();
 
     const selectedProductData = PRODUCT_PRICING[selectedProduct] || PRODUCT_PRICING.custom;
     const fullLocation = [streetAddress, city, province, postalCode, country]
@@ -234,7 +205,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
   };
 
-  // Common input styling for consistency
   const inputStyle = {
     width: '100%',
     padding: '11px 14px',
@@ -334,18 +304,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                         transition: 'all 0.2s ease',
                         boxShadow: isSelected ? '0 4px 12px rgba(194, 94, 20, 0.4)' : '0 2px 4px rgba(0,0,0,0.2)'
                       }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = '#285185';
-                          e.currentTarget.style.borderColor = '#5282BF';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = 'var(--bg-main, #1E3E66)';
-                          e.currentTarget.style.borderColor = 'var(--border-color, #3B5E8C)';
-                        }
-                      }}
                     >
                       <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>{item.label}</div>
                       <div style={{ fontSize: '11px', color: isSelected ? '#FFEDD5' : 'var(--text-muted, #94A3B8)' }}>{item.desc}</div>
@@ -382,18 +340,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                         textAlign: 'center',
                         transition: 'all 0.2s ease',
                         boxShadow: isSelected ? '0 4px 12px rgba(194, 94, 20, 0.4)' : '0 2px 4px rgba(0,0,0,0.2)'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = '#285185';
-                          e.currentTarget.style.borderColor = '#5282BF';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = 'var(--bg-main, #1E3E66)';
-                          e.currentTarget.style.borderColor = 'var(--border-color, #3B5E8C)';
-                        }
                       }}
                     >
                       <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>{item.label}</div>
@@ -432,18 +378,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                         transition: 'all 0.2s ease',
                         boxShadow: isSelected ? '0 4px 12px rgba(194, 94, 20, 0.4)' : '0 2px 4px rgba(0,0,0,0.2)'
                       }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = '#285185';
-                          e.currentTarget.style.borderColor = '#5282BF';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = 'var(--bg-main, #1E3E66)';
-                          e.currentTarget.style.borderColor = 'var(--border-color, #3B5E8C)';
-                        }
-                      }}
                     >
                       <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.label}</div>
                       <div style={{ fontWeight: '800', fontSize: '13px', color: isSelected ? '#FFFFFF' : '#FFEDD5', margin: '2px 0' }}>{item.price}</div>
@@ -455,62 +389,11 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
             </div>
 
             {/* Step 5: Installation Site Address */}
-            <div ref={suggestionRef} style={{ position: 'relative' }}>
+            <div>
               <h3 style={sectionHeaderStyle}>
                 5. Installation Site Address
               </h3>
-              
-              {/* Autocomplete Input Bar */}
-              <div style={{ marginBottom: '15px' }}>
-                <label style={labelStyle}>
-                  Search Address (Suggests matching properties as you type)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Start typing your shoreline street address..."
-                  value={searchAddress}
-                  onChange={handleAddressChange}
-                  style={inputStyle}
-                />
-                
-                {/* Suggestions dropdown portal */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '75px',
-                    left: 0,
-                    right: 0,
-                    backgroundColor: 'var(--bg-main, #1E3E66)',
-                    border: '1px solid var(--border-color, #3B5E8C)',
-                    borderRadius: '6px',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.4)',
-                    zIndex: 100,
-                    overflow: 'hidden'
-                  }}>
-                    {suggestions.map((item, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleSelectSuggestion(item)}
-                        style={{
-                          padding: '12px 15px',
-                          cursor: 'pointer',
-                          fontSize: '13px',
-                          color: '#FFFFFF',
-                          borderBottom: index !== suggestions.length - 1 ? '1px solid #285185' : 'none',
-                          backgroundColor: 'var(--bg-main, #1E3E66)',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#285185'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--bg-main, #1E3E66)'}
-                      >
-                        📍 <strong>{item.street}</strong>, {item.city}, {item.state}, {item.country}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {/* Grid Layout for Detailed Fields */}
               <div style={{ display: 'grid', gridTemplateColumns: addressGridColumns, gap: '15px', marginBottom: '15px' }}>
                 <div>
                   <label style={labelStyle}>Street Name / Number</label>
@@ -571,6 +454,12 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                   />
                 </div>
               </div>
+
+              {verifiedAddress && (
+                <div style={{ marginTop: '10px', fontSize: '13px', color: '#4BB543', fontWeight: 'bold' }}>
+                  ✅ Verified: {verifiedAddress}
+                </div>
+              )}
             </div>
 
             {/* Step 6: Contact Details & Special Notes */}
@@ -643,14 +532,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                 transition: 'background 0.2s ease, transform 0.2s ease',
                 textAlign: 'center',
                 boxShadow: '0 4px 12px rgba(194, 94, 20, 0.4)'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#A14D10';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#C25E14';
-                e.target.style.transform = 'translateY(0)';
               }}
             >
               {isSubmitting ? 'Submitting...' : 'Submit Layout Configuration'}
