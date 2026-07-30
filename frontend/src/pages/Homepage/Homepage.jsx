@@ -455,15 +455,15 @@ export default function Homepage() {
         </ScrollReveal>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER - UPDATED WITH CLIENT INFORMATION */}
       <footer style={{ backgroundColor: 'var(--card-bg, #071322)', color: '#94A3B8', padding: '60px 40px 30px', borderTop: '1px solid var(--border-color, rgba(255,255,255,0.05))' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '40px', marginBottom: '40px' }}>
           <div>
-            <h3 style={{ color: 'var(--text-main, #000000)', fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>GERRY'S DOCKS</h3>
+            <h3 style={{ color: 'var(--text-main, #FFFFFF)', fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>GERRY'S DOCKS</h3>
             <p style={{ fontSize: '14px', lineHeight: '1.6' }}>Custom marine construction and engineered dock systems built for ultimate shoreline longevity.</p>
           </div>
           <div>
-            <h4 style={{ color: 'var(--text-main, #000000)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>NAVIGATION</h4>
+            <h4 style={{ color: 'var(--text-main, #FFFFFF)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>NAVIGATION</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
               <Link to="/" style={{ color: '#94A3B8', textDecoration: 'none' }}>Home</Link>
               <Link to="/products" style={{ color: '#94A3B8', textDecoration: 'none' }}>Catalog</Link>
@@ -471,20 +471,19 @@ export default function Homepage() {
             </div>
           </div>
           <div>
-            <h4 style={{ color: 'var(--text-main, #000000)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>PRODUCTS</h4>
+            <h4 style={{ color: 'var(--text-main, #FFFFFF)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>SOCIAL MEDIA</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
-              <span>Straight Walkway Sections</span>
-              <span>L-Shape Patio Units</span>
-              <span>HDPE Pontoon Floats</span>
-              <span>Shoreline Hardware</span>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8', textDecoration: 'none' }}>Instagram (@gerrysdocks)</a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8', textDecoration: 'none' }}>Facebook (Gerrys Docks)</a>
             </div>
           </div>
           <div>
-            <h4 style={{ color: 'var(--text-main, #000000)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>CONTACT</h4>
+            <h4 style={{ color: 'var(--text-main, #FFFFFF)', fontSize: '14px', fontWeight: '700', marginBottom: '16px', letterSpacing: '0.5px' }}>CONTACT</h4>
             <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-              <p style={{ margin: '0 0 8px 0' }}>Marine Engineering Dept.</p>
-              <p style={{ margin: '0 0 8px 0' }}>info@gerrysdocks.com</p>
-              <p style={{ margin: 0 }}>1-800-DOCK-FIT</p>
+              <p style={{ margin: '0 0 8px 0' }}>Contact: Marty Gates</p>
+              <p style={{ margin: '0 0 8px 0' }}>01 Janice St, Restoule, ON P0H 2R0</p>
+              <p style={{ margin: '0 0 8px 0' }}>gerrysdocks@gmail.com</p>
+              <p style={{ margin: 0 }}>705-477-2872</p>
             </div>
           </div>
         </div>
