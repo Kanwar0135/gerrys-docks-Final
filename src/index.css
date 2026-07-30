@@ -1,0 +1,134 @@
+/* ==========================================================================
+   GLOBAL THEME VARIABLES
+   ========================================================================== */
+
+/* Dark Mode (Default) */
+:root {
+  --primary-bg: #071626;      /* Deep Navy Body */
+  --card-bg: #0F253F;         /* Dark Navy Cards & Banners */
+  --input-bg: #1E3E66;        /* Dark Blue Dropdowns/Inputs */
+  --border-color: #3B5E8C;    
+  --text-main: #FFFFFF;       /* Light Text for Dark Mode */
+  --text-muted: #94A3B8;      
+  --timber-accent: #C25E14;   
+  --timber-hover: #A14D10;    
+}
+
+/* Light Mode Override */
+[data-theme="light"] {
+  --primary-bg: #F8FAFC;      /* Light Off-White Body */
+  --card-bg: #FFFFFF;         /* White Cards & Banners */
+  --input-bg: #F1F5F9;        /* Light Gray Inputs */
+  --border-color: #CBD5E1;    
+  --text-main: #0F172A;       /* Dark Charcoal Text for Light Surfaces */
+  --text-muted: #64748B;      
+  --timber-accent: #C25E14;   
+  --timber-hover: #A14D10;    
+}
+
+/* Automatic System Light Fallback */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --primary-bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --input-bg: #F1F5F9;
+    --border-color: #CBD5E1;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+  }
+}
+
+/* ==========================================================================
+   BASE STYLES & UTILITIES
+   ========================================================================== */
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Reset Links */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Keyboard accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #F59E0B !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25) !important;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 2000;
+  transform: translateY(-160%);
+  background: #FFFFFF;
+  color: #0B1D33;
+  border: 2px solid #C25E14;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-weight: 800;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Force Navbar Brand Logo link text to ALWAYS be white regardless of light/dark mode */
+a.brand-logo-link,
+a.brand-logo-link:visited,
+a.brand-logo-link * {
+  color: #FFFFFF !important;
+}
+
+/* Dedicated Utility Class for Permanent Dark Navy Banners/Hero Sections */
+.permanently-dark-banner {
+  background-color: #0F253F !important;
+  color: #FFFFFF !important;
+}
+
+.permanently-dark-banner *,
+.permanently-dark-banner h1,
+.permanently-dark-banner h2,
+.permanently-dark-banner h3,
+.permanently-dark-banner p,
+.permanently-dark-banner span {
+  color: #FFFFFF !important;
+}
+
+/* Responsive Containers/Cards */
+.theme-card, .section-box {
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* Standard Accent Buttons */
+.btn-primary {
+  background-color: var(--timber-accent);
+  color: #FFFFFF !important;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--timber-hover);
+}

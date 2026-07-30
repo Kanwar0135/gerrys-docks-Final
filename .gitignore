@@ -1,6 +1,35 @@
-.env
-**/.env
+# Dependencies
 node_modules/
 **/node_modules/
 package-lock.json
+
+# Environment & Secret files
+.env
+**/.env
+*.local
+
+# Build output & Logs
+dist/
+dist-ssr/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor & OS files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Legacy / Temp folders
 frontend-old/
+
