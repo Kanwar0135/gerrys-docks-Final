@@ -1,0 +1,659 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/h6ahqw",
+    "id": "h6ahqw",
+    "slide": 4,
+    "layoutId": "ac2081c8-4849-487a-b8a7-8d20ffd4ec87",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "5e898e56-5932-455a-a2b0-bb8c288c8e65",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "ac2081c8-4849-487a-b8a7-8d20ffd4ec87",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "5e898e56-5932-455a-a2b0-bb8c288c8e65",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "5e898e56-5932-455a-a2b0-bb8c288c8e65",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zih8vit8",
+      "id": "1",
+      "bbox": [
+        72,
+        54,
+        340,
+        24
+      ],
+      "geometry": "rect",
+      "text": "CLOUD",
+      "textPreview": "CLOUD",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#C25E14",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CLOUD"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CLOUD",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#C25E14",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "CLOUD",
+              "fontSize": 13,
+              "color": "#C25E14",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kjq9onad",
+      "id": "2",
+      "bbox": [
+        72,
+        86,
+        920,
+        58
+      ],
+      "geometry": "rect",
+      "text": "Deployment evidence is visible in Azure",
+      "textPreview": "Deployment evidence is visible in Azure",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "fontSize": 38,
+        "typeface": "+mn-lt",
+        "color": "#0F172A",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Deployment evidence is visible in Azure"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Deployment evidence is visible in Azure",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "color": "#0F172A",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Deployment evidence is visible in Azure",
+              "fontSize": 38,
+              "color": "#0F172A",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/kn2lgjyt",
+      "id": "3",
+      "bbox": [
+        72,
+        160,
+        350,
+        265
+      ],
+      "geometry": "roundRect",
+      "alt": "Azure Container Registry repositories screenshot",
+      "contentType": "image/png",
+      "imageFit": "cover",
+      "imageMask": {
+        "geometry": "roundRect",
+        "adjustmentList": [
+          {
+            "name": "adj",
+            "formula": "val 4528"
+          }
+        ]
+      },
+      "asset": {
+        "assetId": "e0b3a8ca-e9e2-4227-8ae2-099649234326",
+        "contentType": "image/png",
+        "byteLength": 399982
+      }
+    },
+    {
+      "order": 4,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/bytk3exw",
+      "id": "4",
+      "bbox": [
+        465,
+        160,
+        350,
+        265
+      ],
+      "geometry": "roundRect",
+      "alt": "Kubernetes pods running screenshot",
+      "contentType": "image/png",
+      "imageFit": "cover",
+      "imageMask": {
+        "geometry": "roundRect",
+        "adjustmentList": [
+          {
+            "name": "adj",
+            "formula": "val 4528"
+          }
+        ]
+      },
+      "asset": {
+        "assetId": "6c91bb27-7068-453f-865e-c50cca0b6f10",
+        "contentType": "image/png",
+        "byteLength": 28198
+      }
+    },
+    {
+      "order": 5,
+      "kind": "image",
+      "scope": "slide",
+      "aid": "im/axkja9gr",
+      "id": "5",
+      "bbox": [
+        858,
+        160,
+        350,
+        265
+      ],
+      "geometry": "roundRect",
+      "alt": "GitHub Actions successful workflow screenshot",
+      "contentType": "image/png",
+      "imageFit": "cover",
+      "imageMask": {
+        "geometry": "roundRect",
+        "adjustmentList": [
+          {
+            "name": "adj",
+            "formula": "val 4528"
+          }
+        ]
+      },
+      "asset": {
+        "assetId": "fbfdbd3d-38e7-44de-8116-1a7b65fca664",
+        "contentType": "image/png",
+        "byteLength": 89851
+      }
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cf6pknah",
+      "id": "6",
+      "bbox": [
+        72,
+        444,
+        350,
+        34
+      ],
+      "geometry": "rect",
+      "text": "ACR images",
+      "textPreview": "ACR images",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "fontSize": 25,
+        "typeface": "+mn-lt",
+        "color": "#C25E14",
+        "bold": true,
+        "alignment": "center",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ACR images"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ACR images",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "color": "#C25E14",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ACR images",
+              "fontSize": 25,
+              "color": "#C25E14",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xgfqtsb2",
+      "id": "7",
+      "bbox": [
+        465,
+        444,
+        350,
+        34
+      ],
+      "geometry": "rect",
+      "text": "AKS pods",
+      "textPreview": "AKS pods",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "fontSize": 25,
+        "typeface": "+mn-lt",
+        "color": "#15803D",
+        "bold": true,
+        "alignment": "center",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "AKS pods"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "AKS pods",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "color": "#15803D",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "AKS pods",
+              "fontSize": 25,
+              "color": "#15803D",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u9sruhsv",
+      "id": "8",
+      "bbox": [
+        858,
+        444,
+        350,
+        34
+      ],
+      "geometry": "rect",
+      "text": "CI/CD run",
+      "textPreview": "CI/CD run",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "fontSize": 25,
+        "typeface": "+mn-lt",
+        "color": "#2563EB",
+        "bold": true,
+        "alignment": "center",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "CI/CD run"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "CI/CD run",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "color": "#2563EB",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "CI/CD run",
+              "fontSize": 25,
+              "color": "#2563EB",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/va1832t0",
+      "id": "9",
+      "bbox": [
+        128,
+        536,
+        1024,
+        40
+      ],
+      "geometry": "rect",
+      "text": "GitHub push  →  Docker build  →  Azure Container Registry  →  Azure Kubernetes Service",
+      "textPreview": "GitHub push  →  Docker build  →  Azure Container Registry  →  Azure Kubernetes Service",
+      "resolvedFontSize": 26,
+      "resolvedTextStyle": {
+        "fontSize": 26,
+        "typeface": "+mn-lt",
+        "color": "#0F172A",
+        "bold": true,
+        "alignment": "center",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "GitHub push  →  Docker build  →  Azure Container Registry  →  Azure Kubernetes Service"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "GitHub push  →  Docker build  →  Azure Container Registry  →  Azure Kubernetes Service",
+          "resolvedTextStyle": {
+            "fontSize": 26,
+            "color": "#0F172A",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "GitHub push  →  Docker build  →  Azure Container Registry  →  Azure Kubernetes Service",
+              "fontSize": 26,
+              "color": "#0F172A",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7i9sv21g",
+      "id": "10",
+      "bbox": [
+        72,
+        674,
+        360,
+        24
+      ],
+      "geometry": "rect",
+      "text": "Gerry's Docks technical review",
+      "textPreview": "Gerry's Docks technical review",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#64748B",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Gerry's Docks technical review"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Gerry's Docks technical review",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#64748B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Gerry's Docks technical review",
+              "fontSize": 13,
+              "color": "#64748B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6hgrmx0v",
+      "id": "11",
+      "bbox": [
+        1160,
+        672,
+        48,
+        28
+      ],
+      "geometry": "rect",
+      "text": "04",
+      "textPreview": "04",
+      "resolvedFontSize": 16,
+      "resolvedTextStyle": {
+        "fontSize": 16,
+        "typeface": "+mn-lt",
+        "color": "#64748B",
+        "bold": true,
+        "alignment": "right",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "04"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "04",
+          "resolvedTextStyle": {
+            "fontSize": 16,
+            "color": "#64748B",
+            "bold": true,
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "04",
+              "fontSize": 16,
+              "color": "#64748B",
+              "bold": true,
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}
