@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 
 import Homepage from './pages/Homepage/Homepage';
@@ -8,17 +8,16 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AIAssistant from './components/AIAssistant';
 import PricingAndSpecs from './components/PricingAndSpecs';
 import ThemeToggle from './components/ThemeToggle';
-import logoImg from './assets/logo.png';
 
 // Internal Navigation Component to use router location hooks correctly under BrowserRouter
 function NavigationBar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  
+
   // Auth Tab Control: 'login' or 'signup'
   const [authTab, setAuthTab] = useState('login');
-  
+
   // Login Type Control for credentials: 'email' or 'phone'
   const [loginMethod, setLoginMethod] = useState('email');
 
@@ -111,10 +110,10 @@ function NavigationBar() {
           fontSize: '13px',
           padding: '8px 14px',
           borderRadius: '6px',
-          backgroundColor: isActive 
-            ? 'var(--timber-accent, #C25E14)' 
-            : isHovered 
-              ? 'var(--input-hover, #1E3E66)' 
+          backgroundColor: isActive
+            ? 'var(--timber-accent, #C25E14)'
+            : isHovered
+              ? 'var(--input-hover, #1E3E66)'
               : 'var(--card-bg, rgba(255, 255, 255, 0.05))',
           border: '1px solid',
           borderColor: isActive || isHovered ? 'var(--timber-accent, #C25E14)' : 'var(--border-color, rgba(255, 255, 255, 0.15))',
@@ -161,17 +160,37 @@ function NavigationBar() {
             cursor: 'pointer'
           }}
         >
-          <img 
-            src={logoImg} 
-            alt="Gerry's Docks Logo" 
-            style={{ 
-              height: isScrolled ? '32px' : '45px', 
-              width: 'auto', 
-              objectFit: 'contain', 
-              display: 'block',
+          <span
+            aria-hidden="true"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: isScrolled ? '32px' : '45px',
+              height: isScrolled ? '32px' : '45px',
+              borderRadius: '6px',
+              backgroundColor: 'var(--timber-accent, #C25E14)',
+              color: '#FFFFFF',
+              fontWeight: 900,
+              fontSize: isScrolled ? '16px' : '20px',
+              boxShadow: '0 8px 18px rgba(194, 94, 20, 0.35)',
               transition: 'all 0.3s'
-            }} 
-          />
+            }}
+          >
+            G
+          </span>
+          <span
+            style={{
+              color: '#FFFFFF',
+              fontWeight: 900,
+              fontSize: isScrolled ? '20px' : '28px',
+              letterSpacing: '0.5px',
+              marginLeft: '12px',
+              transition: 'all 0.3s'
+            }}
+          >
+            GERRY'S DOCKS
+          </span>
         </Link>
 
         {/* Navigation Links, Theme Switcher & Sign In Button */}
@@ -181,13 +200,13 @@ function NavigationBar() {
           {renderNavLink('/specs', 'Pricing & Specs', 'nav-specs')}
           {renderNavLink('/quote', 'Request Quote', 'nav-quote')}
           {renderNavLink('/admin', 'Admin Console', 'nav-admin')}
-          
+
           {/* Theme Switcher Button */}
           <ThemeToggle />
 
           {/* Authentication Action Button */}
           {userLoggedIn ? (
-            <button 
+            <button
               onClick={() => { setUserLoggedIn(false); alert('Successfully logged out.'); }}
               onMouseEnter={() => setHoverBtn('signout')}
               onMouseLeave={() => setHoverBtn('')}
@@ -207,7 +226,7 @@ function NavigationBar() {
               Sign Out
             </button>
           ) : (
-            <button 
+            <button
               onClick={() => { setAuthTab('login'); setShowLoginModal(true); }}
               onMouseEnter={() => setHoverBtn('signin')}
               onMouseLeave={() => setHoverBtn('')}
@@ -258,7 +277,7 @@ function NavigationBar() {
             border: '1px solid var(--border-color, #E2E8F0)'
           }}>
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setShowLoginModal(false)}
               style={{
                 position: 'absolute',
@@ -277,7 +296,7 @@ function NavigationBar() {
 
             {/* Top Interactive Tabs (Sign In vs Sign Up) */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #E2E8F0)' }}>
-              <button 
+              <button
                 onClick={() => setAuthTab('login')}
                 style={{
                   flex: 1,
@@ -294,7 +313,7 @@ function NavigationBar() {
               >
                 Sign In
               </button>
-              <button 
+              <button
                 onClick={() => setAuthTab('signup')}
                 style={{
                   flex: 1,
@@ -365,17 +384,17 @@ function NavigationBar() {
 
               {/* PRIMARY CREDENTIAL FORM - COMES FIRST */}
               <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                
+
                 {authTab === 'signup' && (
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted, #4A5568)', textTransform: 'uppercase', marginBottom: '5px' }}>Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="John Doe" 
-                      required 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }} 
+                      placeholder="John Doe"
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }}
                     />
                   </div>
                 )}
@@ -386,8 +405,8 @@ function NavigationBar() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                       <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted, #4A5568)', textTransform: 'uppercase' }}>Email Address</label>
                       {authTab === 'login' && (
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={triggerForgotUsername}
                           style={{ background: 'none', border: 'none', color: 'var(--timber-accent, #C25E14)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
                         >
@@ -395,13 +414,13 @@ function NavigationBar() {
                         </button>
                       )}
                     </div>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@gmail.com" 
-                      required 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }} 
+                      placeholder="name@gmail.com"
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }}
                     />
                   </div>
                 ) : (
@@ -409,8 +428,8 @@ function NavigationBar() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                       <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted, #4A5568)', textTransform: 'uppercase' }}>Phone Number</label>
                       {authTab === 'login' && (
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={triggerForgotPhone}
                           style={{ background: 'none', border: 'none', color: 'var(--timber-accent, #C25E14)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
                         >
@@ -418,13 +437,13 @@ function NavigationBar() {
                         </button>
                       )}
                     </div>
-                    <input 
-                      type="tel" 
+                    <input
+                      type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 (555) 000-0000" 
-                      required 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }} 
+                      placeholder="+1 (555) 000-0000"
+                      required
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }}
                     />
                   </div>
                 )}
@@ -433,8 +452,8 @@ function NavigationBar() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                     <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted, #4A5568)', textTransform: 'uppercase' }}>Password</label>
                     {authTab === 'login' && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={triggerForgotPassword}
                         style={{ background: 'none', border: 'none', color: 'var(--timber-accent, #C25E14)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
                       >
@@ -442,21 +461,21 @@ function NavigationBar() {
                       </button>
                     )}
                   </div>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••" 
-                    required 
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }} 
+                    placeholder="••••••••"
+                    required
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color, #CBD5E0)', backgroundColor: 'var(--input-bg, white)', color: 'var(--text-main, black)', boxSizing: 'border-box', fontSize: '14px' }}
                   />
                 </div>
 
                 {/* Remember Me */}
                 <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: '5px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-muted, #4A5568)' }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                       style={{ accentColor: 'var(--timber-accent, #C25E14)' }}
@@ -466,8 +485,8 @@ function NavigationBar() {
                 </div>
 
                 {/* Primary Action Button */}
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   style={{
                     backgroundColor: hoverBtn === 'submit' ? 'var(--timber-hover, #A14D10)' : 'var(--timber-accent, #C25E14)',
                     color: 'white',
@@ -495,7 +514,7 @@ function NavigationBar() {
               </div>
 
               <div style={{ display: 'flex', gap: '15px' }}>
-                <button 
+                <button
                   onClick={() => alert('Social sign-in module triggered: Google OAuth active.')}
                   style={{
                     flex: 1,
@@ -517,14 +536,14 @@ function NavigationBar() {
                   onMouseLeave={() => setHoverBtn('')}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18">
-                    <path fill="#EA4335" d="M9 3.6c1.6 0 3 .6 4.1 1.6l3-3C14.3.8 11.8 0 9 0 5.5 0 2.5 2 1 5l3.2 2.5C5 5.2 6.8 3.6 9 3.6z"/>
-                    <path fill="#4285F4" d="M17.6 9.2c0-.6 0-1.2-.1-1.7H9v3.3h4.8c-.2 1-.8 1.8-1.6 2.4l2.5 2c1.5-1.4 2.4-3.5 2.4-6z"/>
-                    <path fill="#FBBC05" d="M4.2 10.7c-.2-.6-.3-1.2-.3-1.7s.1-1.1.3-1.7L1 4.8C.3 6 .0 7.4.0 9s.3 3 .9 4.2l3.3-2.5z"/>
-                    <path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.5-2c-.9.6-2.1 1-3.5 1-2.2 0-4-1.6-4.7-3.8L1 13.5C2.5 16 5.5 18 9 18z"/>
+                    <path fill="#EA4335" d="M9 3.6c1.6 0 3 .6 4.1 1.6l3-3C14.3.8 11.8 0 9 0 5.5 0 2.5 2 1 5l3.2 2.5C5 5.2 6.8 3.6 9 3.6z" />
+                    <path fill="#4285F4" d="M17.6 9.2c0-.6 0-1.2-.1-1.7H9v3.3h4.8c-.2 1-.8 1.8-1.6 2.4l2.5 2c1.5-1.4 2.4-3.5 2.4-6z" />
+                    <path fill="#FBBC05" d="M4.2 10.7c-.2-.6-.3-1.2-.3-1.7s.1-1.1.3-1.7L1 4.8C.3 6 .0 7.4.0 9s.3 3 .9 4.2l3.3-2.5z" />
+                    <path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.5-2c-.9.6-2.1 1-3.5 1-2.2 0-4-1.6-4.7-3.8L1 13.5C2.5 16 5.5 18 9 18z" />
                   </svg>
                   Google
                 </button>
-                <button 
+                <button
                   onClick={() => alert('Social sign-in module triggered: Apple Authentication active.')}
                   style={{
                     flex: 1,
@@ -546,7 +565,7 @@ function NavigationBar() {
                   onMouseLeave={() => setHoverBtn('')}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.2.67-2.92 1.49-.62.71-1.16 1.85-1.01 2.96 1.1.09 2.22-.58 2.94-1.39z"/>
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.2.67-2.92 1.49-.62.71-1.16 1.85-1.01 2.96 1.1.09 2.22-.58 2.94-1.39z" />
                   </svg>
                   Apple
                 </button>
@@ -569,7 +588,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/specs" element={<PricingAndSpecs />}  />
+          <Route path="/specs" element={<PricingAndSpecs />} />
           <Route path="/quote" element={<QuoteRequest />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
