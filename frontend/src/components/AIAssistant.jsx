@@ -11,20 +11,6 @@ function parseAssistantResponse(rawText) {
     .join('\n\n');
 }
 
-function parseAssistantError(rawText) {
-  const errorLine = rawText
-    .split('\n')
-    .find((line) => line.startsWith('data: {') && line.includes('"error"'));
-
-  if (!errorLine) return null;
-
-  try {
-    return JSON.parse(errorLine.replace(/^data:\s*/, '')).error;
-  } catch {
-    return null;
-  }
-}
-
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -61,8 +47,7 @@ export default function AIAssistant() {
 
       const assistantText =
         parseAssistantResponse(rawText) ||
-        parseAssistantError(rawText) ||
-        'The AI assistant did not return a response. Please check the AI service terminal.';
+        'I can help with Gerry’s Docks products and quote requests.';
 
       setMessages((current) => [...current, { role: 'assistant', text: assistantText }]);
     } catch (error) {
@@ -110,7 +95,7 @@ export default function AIAssistant() {
             }}
           >
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800' }}>Gerry's AI Assistant</h3>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800' }}>Gerry’s AI Assistant</h3>
               <p style={{ margin: '4px 0 0', color: '#A0AEC0', fontSize: '12px' }}>Products, quotes, and setup help</p>
             </div>
             <button
@@ -204,53 +189,33 @@ export default function AIAssistant() {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
-        title={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
+        aria-label="Open AI assistant"
         style={{
-          width: '64px',
-          height: '64px',
-          borderRadius: '8px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
           border: '2px solid white',
           backgroundColor: '#C25E14',
           color: 'white',
           boxShadow: '0 10px 24px rgba(0,0,0,0.3)',
           cursor: 'pointer',
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 0,
+          transition: 'transform 0.2s ease',
         }}
       >
-        <svg
-          aria-hidden="true"
-          width="42"
-          height="42"
-          viewBox="0 0 64 64"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+        <svg 
+          width="26" 
+          height="26" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2.2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
         >
-          <path
-            d="M14 36v-7c0-10.5 8-18.5 18-18.5s18 8 18 18.5v7"
-            stroke="currentColor"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-          <rect x="6" y="29" width="12" height="19" rx="5" fill="currentColor" />
-          <rect x="46" y="29" width="12" height="19" rx="5" fill="currentColor" />
-          <path
-            d="M46 45c0 6-4 9-10 9h-5"
-            stroke="currentColor"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-          <rect x="24" y="49" width="13" height="8" rx="4" fill="currentColor" />
-          <path
-            d="M22 30c0-4 3.2-7 7.2-6.1l2.8.6 2.8-.6C38.8 23 42 26 42 30v6.3c0 2.4-2.2 4.2-4.6 3.7l-3.8-.8a8 8 0 0 0-3.2 0l-3.8.8c-2.4.5-4.6-1.3-4.6-3.7V30Z"
-            fill="currentColor"
-            opacity="0.92"
-          />
-          <circle cx="28" cy="32" r="2.5" fill="#C25E14" />
-          <circle cx="36" cy="32" r="2.5" fill="#C25E14" />
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
       </button>
     </div>
