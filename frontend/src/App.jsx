@@ -8,6 +8,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AIAssistant from './components/AIAssistant';
 import PricingAndSpecs from './components/PricingAndSpecs';
 import ThemeToggle from './components/ThemeToggle';
+import logoImg from './assets/logo.png';
 
 // Internal Navigation Component to use router location hooks correctly under BrowserRouter
 function NavigationBar() {
@@ -156,36 +157,21 @@ function NavigationBar() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
             textDecoration: 'none',
             cursor: 'pointer'
           }}
         >
-          <div style={{
-            backgroundColor: 'var(--timber-accent, #C25E14)',
-            width: isScrolled ? '32px' : '40px',
-            height: isScrolled ? '32px' : '40px',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: isScrolled ? '14px' : '18px',
-            transition: 'all 0.3s',
-            boxShadow: '0 2px 8px rgba(194, 94, 20, 0.4)'
-          }}>
-            G
-          </div>
-          <span style={{ 
-            color: '#FFFFFF', 
-            fontWeight: '800', 
-            fontSize: isScrolled ? '18px' : '22px', 
-            letterSpacing: '1px',
-            transition: 'all 0.3s'
-          }}>
-            GERRY'S DOCKS
-          </span>
+          <img 
+            src={logoImg} 
+            alt="Gerry's Docks Logo" 
+            style={{ 
+              height: isScrolled ? '32px' : '45px', 
+              width: 'auto', 
+              objectFit: 'contain', 
+              display: 'block',
+              transition: 'all 0.3s'
+            }} 
+          />
         </Link>
 
         {/* Navigation Links, Theme Switcher & Sign In Button */}
