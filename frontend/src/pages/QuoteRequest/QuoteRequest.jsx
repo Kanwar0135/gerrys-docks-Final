@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL || 'http://localhost:5002/api/quotes';
+const PRODUCT_API_URL = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:5001/api/products';
 
 function isValidNorthAmericanPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
@@ -15,21 +16,13 @@ function isValidNorthAmericanPhone(phone) {
   return true;
 }
 
-const PRODUCT_PRICING = {
-  'dock-sec-16': { name: "Straight Walkway Section (8' x 16')", basePrice: 2450 },
-  'dock-lay-l': { name: 'L-Shape Patio Expansion Unit', basePrice: 4800 },
-  'dock-lay-t': { name: 'T-Junction Dock System', basePrice: 5200 },
-  'dock-hw-joint': { name: 'Heavy-Duty Subframe Joint', basePrice: 1250 },
-  'dock-fl-18': { name: '18" HDPE Pontoon Float Mount', basePrice: 1850 },
-  'dock-hw-rock': { name: 'Shoreline Rock Mount Bracket', basePrice: 950 },
-  'custom': { name: 'Fully Custom Layout Design', basePrice: 3000 }
-};
-
 export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const location = useLocation();
   
   // Form State
-  const [selectedProduct, setSelectedProduct] = useState('custom');
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [productLoadError, setProductLoadError] = useState('');
   const [substrate, setSubstrate] = useState('');
   const [waterDepth, setWaterDepth] = useState('shallow');
   const [selectedAccessories, setSelectedAccessories] = useState([]);
@@ -61,13 +54,35 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const addressGridColumns = isMobile ? '1fr' : 'minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)';
   const twoColumnGrid = isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))';
 
-  // Extract initial product from URL search params
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const prodId = params.get('product');
-    if (prodId && PRODUCT_PRICING[prodId]) {
-      setSelectedProduct(prodId);
+    async function loadProducts() {
+      try {
+        const response = await fetch(PRODUCT_API_URL);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to load products.');
+        }
+
+        const availableProducts = Array.isArray(data)
+          ? data.filter((product) => product.available !== false)
+          : [];
+
+        setProducts(availableProducts);
+        setProductLoadError('');
+
+        const params = new URLSearchParams(location.search);
+        const prodId = params.get('product');
+        const requestedProduct = availableProducts.find((product) => product.id === prodId);
+        setSelectedProduct((current) => current || requestedProduct?.id || availableProducts[0]?.id || '');
+      } catch (error) {
+        setProducts([]);
+        setSelectedProduct('');
+        setProductLoadError(error.message || 'Unable to load products from the database.');
+      }
     }
+
+    loadProducts();
   }, [location]);
 
   useEffect(() => {
@@ -89,7 +104,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   };
 
   const resetQuoteForm = () => {
-    setSelectedProduct('custom');
+    setSelectedProduct(products[0]?.id || '');
     setSubstrate('');
     setWaterDepth('shallow');
     setSelectedAccessories([]);
@@ -106,7 +121,8 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   };
 
   // Calculate live dynamic estimate
-  const base = PRODUCT_PRICING[selectedProduct]?.basePrice || 3000;
+  const selectedProductData = products.find((product) => product.id === selectedProduct);
+  const base = Number(selectedProductData?.price || 0);
   const substrateSurcharge = substrate === 'muck' || substrate === 'rock' ? 450 : 0;
   const depthSurcharge = waterDepth === 'deep' ? 600 : waterDepth === 'fluctuating' ? 850 : 0;
   const accessoriesTotal = selectedAccessories.reduce((sum, acc) => {
@@ -156,7 +172,11 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     // Run address validation check before submitting quote
     await validateAddress();
 
-    const selectedProductData = PRODUCT_PRICING[selectedProduct] || PRODUCT_PRICING.custom;
+    if (!selectedProductData) {
+      setSubmitStatus('Please select an available product before submitting the quote.');
+      return;
+    }
+
     const fullLocation = [streetAddress, city, province, postalCode, country]
       .filter(Boolean)
       .join(', ');
@@ -184,7 +204,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
             {
               productId: selectedProduct,
               quantity: 1,
-              priceAtTime: selectedProductData.basePrice,
+              priceAtTime: base,
             },
           ],
         }),
@@ -263,14 +283,24 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               <select
                 value={selectedProduct}
                 onChange={(e) => setSelectedProduct(e.target.value)}
+                disabled={products.length === 0}
                 style={{ ...inputStyle, height: '44px', fontWeight: '600', color: '#FFFFFF' }}
               >
-                {Object.entries(PRODUCT_PRICING).map(([id, data]) => (
-                  <option key={id} value={id} style={{ backgroundColor: '#071626', color: '#FFFFFF' }}>
-                    {data.name} (Base: ${data.basePrice.toLocaleString()})
+                {products.length === 0 ? (
+                  <option value="" style={{ backgroundColor: '#071626', color: '#FFFFFF' }}>
+                    No database products available
+                  </option>
+                ) : products.map((product) => (
+                  <option key={product.id} value={product.id} style={{ backgroundColor: '#071626', color: '#FFFFFF' }}>
+                    {product.name} (Base: ${Number(product.price || 0).toLocaleString()})
                   </option>
                 ))}
               </select>
+              {productLoadError && (
+                <div style={{ marginTop: '10px', padding: '12px', borderRadius: '6px', backgroundColor: '#FEF3C7', color: '#92400E', fontSize: '13px', fontWeight: '700' }}>
+                  {productLoadError}
+                </div>
+              )}
             </div>
 
             {/* Step 2: Shoreline Substrate */}

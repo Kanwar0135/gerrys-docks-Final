@@ -2,73 +2,6 @@ const { db } = require("./firebase");
 
 const productsCollection = db.collection("products");
 
-const DEFAULT_PRODUCTS = [
-  {
-    id: "dock-8x16",
-    name: "8 x 16 Aluminum Dock Section",
-    category: "Docks",
-    price: 3295,
-    description: "Lightweight modular section with decking, side rails, and adjustable legs.",
-    available: true,
-  },
-  {
-    id: "dock-4x10",
-    name: "4 x 10 Shoreline Dock Extension",
-    category: "Docks",
-    price: 1795,
-    description: "Adds reach for changing water levels or wider mooring space.",
-    available: true,
-  },
-  {
-    id: "ramp-4x12",
-    name: "4 x 12 Hinged Access Ramp",
-    category: "Ramps",
-    price: 1425,
-    description: "Stable transition from bank to dock with seasonal hinge hardware.",
-    available: true,
-  },
-  {
-    id: "ramp-4x20",
-    name: "4 x 20 Long Access Ramp",
-    category: "Ramps",
-    price: 2295,
-    description: "Extra length for shallow banks, uneven shorelines, and lower grades.",
-    available: true,
-  },
-  {
-    id: "bench-kit",
-    name: "Dock Bench Kit",
-    category: "Accessories",
-    price: 395,
-    description: "Bolt-on bench with aluminum brackets and weather-resistant seating.",
-    available: true,
-  },
-  {
-    id: "ladder",
-    name: "Flip-Up Swim Ladder",
-    category: "Accessories",
-    price: 325,
-    description: "Corrosion-resistant ladder that lifts out of the water when not in use.",
-    available: true,
-  },
-  {
-    id: "bumpers",
-    name: "Boat Bumper Package",
-    category: "Accessories",
-    price: 185,
-    description: "Protective edge bumpers and corner guards for everyday docking.",
-    available: true,
-  },
-  {
-    id: "wheel-kit",
-    name: "Seasonal Wheel Kit",
-    category: "Accessories",
-    price: 640,
-    description: "Helps roll dock sections in and out during spring setup and fall removal.",
-    available: false,
-  },
-];
-
 function serializeProduct(doc) {
   if (!doc.exists) return null;
 
@@ -149,33 +82,10 @@ async function deleteProduct(id) {
   return product;
 }
 
-async function resetProducts() {
-  const snapshot = await productsCollection.get();
-  const batch = db.batch();
-  const timestamp = new Date();
-
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  DEFAULT_PRODUCTS.forEach((product) => {
-    const ref = productsCollection.doc(product.id);
-    batch.set(ref, {
-      ...product,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    });
-  });
-
-  await batch.commit();
-  return getAllProducts();
-}
-
 module.exports = {
   getAllProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-  resetProducts,
 };

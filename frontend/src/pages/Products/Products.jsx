@@ -3,63 +3,6 @@ import { Link } from 'react-router-dom';
 
 const PRODUCT_API_URL = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:5001/api/products';
 
-const PRODUCT_DATABASE = [
-  {
-    id: 'dock-sec-16',
-    name: "Straight Walkway Section (8' x 16')",
-    category: 'sections',
-    length: '16ft',
-    price: 'Custom Quote',
-    img: '/images/straight-dock-water-view.jpg',
-    specs: { alloy: '2x8 PT LUMBER', capacity: '2,500 LBS', install: '18" HDPE FLOATS' }
-  },
-  {
-    id: 'dock-lay-l',
-    name: 'L-Shape Patio Expansion Unit',
-    category: 'layouts',
-    length: '16ft',
-    price: 'Custom Quote',
-    img: '/images/hero-dock.jpg',
-    specs: { alloy: '2x8 PT LUMBER', capacity: '3,800 LBS', install: 'MULTI-HINGED' }
-  },
-  {
-    id: 'dock-lay-t',
-    name: 'T-Junction Dock System',
-    category: 'layouts',
-    length: '20ft',
-    price: 'Custom Quote',
-    img: '/images/dock-t-junction-cleats.jpg',
-    specs: { alloy: 'REINFORCED JOIST', capacity: '4,500 LBS', install: 'CHAIN RIGGED' }
-  },
-  {
-    id: 'dock-hw-joint',
-    name: 'Heavy-Duty Subframe Joint',
-    category: 'hardware',
-    length: '10ft',
-    price: 'Contact for Pricing',
-    img: '/images/shop-frame-build.jpg',
-    specs: { alloy: 'THRU-BOLTED STEEL', capacity: 'INDUSTRIAL', install: 'GALVANIZED' }
-  },
-  {
-    id: 'dock-fl-18',
-    name: '18" HDPE Pontoon Float Mount',
-    category: 'floats',
-    length: '10ft',
-    price: 'Contact for Pricing',
-    img: '/images/shop-pontoon-mounting-detail.jpg',
-    specs: { alloy: 'HDPE POLYMER', capacity: 'BUOYANT LOG', install: 'UV PROTECTED' }
-  },
-  {
-    id: 'dock-hw-rock',
-    name: 'Shoreline Rock Mount Bracket',
-    category: 'hardware',
-    length: '10ft',
-    price: 'Contact for Pricing',
-    img: '/images/rock-mount-ramp-dock.jpg',
-    specs: { alloy: 'HEAVY STEEL', capacity: 'SHORE MOUNT', install: 'ADJUSTABLE' }
-  }
-];
-
 function formatBackendProduct(product) {
   const categoryMap = {
     Docks: 'sections',
@@ -87,7 +30,7 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeLength, setActiveLength] = useState('all');
-  const [products, setProducts] = useState(PRODUCT_DATABASE);
+  const [products, setProducts] = useState([]);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
@@ -100,13 +43,11 @@ export default function Products() {
           throw new Error(data.error || 'Unable to load products.');
         }
 
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data.map(formatBackendProduct));
-          setLoadError('');
-        }
+        setProducts(Array.isArray(data) ? data.map(formatBackendProduct) : []);
+        setLoadError('');
       } catch (error) {
-        setLoadError(`${error.message} Showing sample catalog for now.`);
-        setProducts(PRODUCT_DATABASE);
+        setLoadError(error.message || 'Unable to load products from the database.');
+        setProducts([]);
       }
     }
 

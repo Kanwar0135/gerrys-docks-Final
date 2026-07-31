@@ -7,7 +7,6 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  resetProducts,
 } = require("../services/productService");
 
 const router = express.Router();
@@ -73,12 +72,10 @@ router.post("/", requireAdmin, async (req, res, next) => {
   }
 });
 
-router.post("/reset", requireAdmin, async (req, res, next) => {
-  try {
-    res.json(await resetProducts());
-  } catch (error) {
-    next(error);
-  }
+router.post("/reset", requireAdmin, async (req, res) => {
+  return res.status(410).json({
+    error: "Catalog reset is disabled for the final client database.",
+  });
 });
 
 router.put("/:id", requireAdmin, async (req, res, next) => {
