@@ -27,27 +27,52 @@ jobs:
       - name: Build and push frontend image
         run: |
           docker build -t $ACR_LOGIN_SERVER/frontend:$IMAGE_TAG ./frontend
-          docker push $ACR_LOGIN_SERVER/frontend:$IMAGE_TAG
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/frontend:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
 
       - name: Build and push product service image
         run: |
           docker build -t $ACR_LOGIN_SERVER/product-service:$IMAGE_TAG ./services/product-service
-          docker push $ACR_LOGIN_SERVER/product-service:$IMAGE_TAG
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/product-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
 
       - name: Build and push quote service image
         run: |
           docker build -t $ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG ./services/quote-service
-          docker push $ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
 
       - name: Build and push admin service image
         run: |
           docker build -t $ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG ./services/admin-service
-          docker push $ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
 
       - name: Build and push AI service image
         run: |
           docker build -t $ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG ./services/ai-service
-          docker push $ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
 
       - name: Connect kubectl to AKS
         run: |
