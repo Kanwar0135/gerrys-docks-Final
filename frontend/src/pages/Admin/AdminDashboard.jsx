@@ -747,34 +747,6 @@ const AdminDashboard = () => {
 
               </div>
 
-              <hr style={{ border: 'none', borderTop: '1px solid #EDF2F7', margin: '24px 0' }} />
-
-              {/* Two-Factor Authentication */}
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#2D3748', margin: '0 0 6px' }}>
-                  Two-Factor Authentication
-                </h3>
-                <p style={{ fontSize: '14px', color: '#4A5568', margin: '0 0 16px' }}>
-                  Add an extra layer of security to your account by requiring more than just a password to log in.
-                </p>
-                <button 
-                  onClick={() => alert('2FA Setup Wizard initiated successfully!')}
-                  style={{
-                    backgroundColor: '#C25E14',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: '6px',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 4px rgba(194, 94, 20, 0.3)'
-                  }}
-                >
-                  Enable 2FA
-                </button>
-              </div>
-
             </div>
           </div>
         ) : (
