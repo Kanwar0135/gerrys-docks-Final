@@ -164,6 +164,82 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadAdminSettings = async (token) => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${ADMIN_API_URL}/settings`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (AUTH_ERROR_STATUSES.has(response.status)) {
+          clearAdminSession('Admin session expired. Please sign in again.');
+          return;
+        }
+
+        throw new Error(data.error || 'Unable to load admin settings.');
+      }
+
+      setAdminProfileName(data.profileName || 'Gerry Administrator');
+      setEditableEmail(data.email || '');
+      setAdminEmail(data.email || '');
+      localStorage.setItem('gerrysAdminEmail', data.email || '');
+    } catch (error) {
+      setSecurityMessage(error.message || 'Unable to load admin settings.');
+    }
+  };
+
+  const updateAdminSettings = async (payload, successMessage) => {
+    const token = getAdminToken();
+
+    if (!token) {
+      clearAdminSession('Admin session expired. Please sign in again.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${ADMIN_API_URL}/settings`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (AUTH_ERROR_STATUSES.has(response.status)) {
+          clearAdminSession('Admin session expired. Please sign in again.');
+          return;
+        }
+
+        throw new Error(data.error || 'Unable to update admin settings.');
+      }
+
+      if (data.admin?.profileName) {
+        setAdminProfileName(data.admin.profileName);
+      }
+
+      if (data.admin?.email) {
+        setEditableEmail(data.admin.email);
+        setAdminEmail(data.admin.email);
+        localStorage.setItem('gerrysAdminEmail', data.admin.email);
+      }
+
+      setSecurityMessage(successMessage);
+      setCurrentPasswordInput('');
+      setNewPasswordInput('');
+      window.setTimeout(() => setSecurityMessage(''), 4000);
+    } catch (error) {
+      setSecurityMessage(error.message || 'Unable to update admin settings.');
+    }
+  };
+
   useEffect(() => {
     const savedToken = localStorage.getItem('gerrysAdminToken');
     const savedEmail = localStorage.getItem('gerrysAdminEmail');
@@ -172,6 +248,7 @@ const AdminDashboard = () => {
       setIsAuthenticated(true);
       setAdminEmail(savedEmail || 'admin@gerrysdocks.com');
       setEditableEmail(savedEmail || 'admin@gerrysdocks.com');
+      loadAdminSettings(savedToken);
       loadQuotes(savedToken);
       loadProducts();
     }
@@ -237,7 +314,10 @@ const AdminDashboard = () => {
 
       localStorage.setItem('gerrysAdminToken', data.token);
       localStorage.setItem('gerrysAdminEmail', data.admin?.email || adminEmail);
+      setAdminProfileName(data.admin?.profileName || 'Gerry Administrator');
+      setEditableEmail(data.admin?.email || adminEmail);
       setIsAuthenticated(true);
+      loadAdminSettings(data.token);
       loadQuotes(data.token);
       loadProducts();
       setLoginError('');
@@ -681,7 +761,10 @@ const AdminDashboard = () => {
                     style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14px', color: '#2D3748', fontWeight: '600' }}
                   />
                   <button 
-                    onClick={() => { setSecurityMessage('Admin profile name updated successfully!'); setTimeout(() => setSecurityMessage(''), 4000); }}
+                    onClick={() => updateAdminSettings(
+                      { profileName: adminProfileName },
+                      'Admin profile name updated successfully.'
+                    )}
                     style={{ background: 'none', border: 'none', color: '#C25E14', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
                   >
                     Save Name
@@ -710,7 +793,10 @@ const AdminDashboard = () => {
                       style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568' }}
                     />
                     <button 
-                      onClick={() => { setAdminEmail(editableEmail); localStorage.setItem('gerrysAdminEmail', editableEmail); setSecurityMessage('Admin email updated successfully!'); setTimeout(() => setSecurityMessage(''), 4000); }}
+                      onClick={() => updateAdminSettings(
+                        { email: editableEmail },
+                        'Admin email updated successfully.'
+                      )}
                       style={{ background: 'none', border: 'none', color: '#C25E14', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
                     >
                       Update
@@ -726,22 +812,35 @@ const AdminDashboard = () => {
                   <label style={{ display: 'block', fontWeight: '700', fontSize: '14px', color: '#2D3748', marginBottom: '8px' }}>
                     Change Password
                   </label>
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E0', borderRadius: '8px', padding: '10px 14px', backgroundColor: '#F8FAFC' }}>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      onChange={(e) => setNewPasswordInput(e.target.value)}
-                      style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568' }}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                    <input
+                      type="password"
+                      placeholder="Current password"
+                      value={currentPasswordInput}
+                      onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                      style={{ border: '1px solid #CBD5E0', borderRadius: '8px', background: '#F8FAFC', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568', padding: '12px 14px', boxSizing: 'border-box' }}
                     />
-                    <button 
-                      onClick={() => { setSecurityMessage('Password changed successfully!'); setTimeout(() => setSecurityMessage(''), 4000); }}
-                      style={{ background: 'none', border: 'none', color: '#C25E14', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
-                    >
-                      Change
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E0', borderRadius: '8px', padding: '10px 14px', backgroundColor: '#F8FAFC' }}>
+                      <input
+                        type="password"
+                        placeholder="New password"
+                        value={newPasswordInput}
+                        onChange={(e) => setNewPasswordInput(e.target.value)}
+                        style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14px', color: '#4A5568' }}
+                      />
+                      <button
+                        onClick={() => updateAdminSettings(
+                          { currentPassword: currentPasswordInput, newPassword: newPasswordInput },
+                          'Password changed successfully.'
+                        )}
+                        style={{ background: 'none', border: 'none', color: '#C25E14', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        Change
+                      </button>
+                    </div>
                   </div>
                   <span style={{ fontSize: '12px', color: '#718096', marginTop: '6px', display: 'block' }}>
-                    Last changed today.
+                    Password changes are saved securely through the admin backend.
                   </span>
                 </div>
 
