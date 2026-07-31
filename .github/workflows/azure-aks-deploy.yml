@@ -58,11 +58,11 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f ./k8s/product-service.yaml
-          kubectl apply -f ./k8s/quote-service.yaml
-          kubectl apply -f ./k8s/admin-service.yaml
-          kubectl apply -f ./k8s/ai-service.yaml
-          kubectl apply -f ./k8s/frontend.yaml
+          kubectl apply -f ./deploy/k8s/product-service.yaml
+          kubectl apply -f ./deploy/k8s/quote-service.yaml
+          kubectl apply -f ./deploy/k8s/admin-service.yaml
+          kubectl apply -f ./deploy/k8s/ai-service.yaml
+          kubectl apply -f ./deploy/k8s/frontend.yaml
 
       - name: Update AKS deployments with new images
         run: |
