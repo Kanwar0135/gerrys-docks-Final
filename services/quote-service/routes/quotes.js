@@ -4,6 +4,67 @@ const { requireAdmin } = require("../middleware/requireAdmin");
 const { createQuote, getAllQuotes } = require("../services/quoteService");
 
 const router = express.Router();
+const ADDRESS_COUNTRIES = new Set(["ca", "us"]);
+
+function mapGeoapifyAddress(feature) {
+  const properties = feature.properties || {};
+
+  return {
+    label: properties.formatted,
+    streetAddress: [properties.housenumber, properties.street].filter(Boolean).join(" "),
+    city: properties.city || properties.town || properties.village || properties.county || "",
+    province: properties.state || "",
+    postalCode: properties.postcode || "",
+    country: properties.country || "",
+    countryCode: properties.country_code || "",
+    latitude: properties.lat,
+    longitude: properties.lon,
+  };
+}
+
+router.get("/address-suggestions", async (req, res, next) => {
+  try {
+    const query = String(req.query.query || "").trim();
+
+    if (query.length < 3) {
+      return res.json([]);
+    }
+
+    const apiKey = process.env.GEOAPIFY_API_KEY || process.env.ADDRESS_AUTOCOMPLETE_API_KEY;
+
+    if (!apiKey) {
+      return res.status(503).json({
+        error: "Address autocomplete is not configured",
+      });
+    }
+
+    const params = new URLSearchParams({
+      text: query,
+      limit: "6",
+      filter: "countrycode:ca,us",
+      apiKey,
+    });
+
+    const response = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data.message || "Unable to fetch address suggestions",
+      });
+    }
+
+    const suggestions = Array.isArray(data.features)
+      ? data.features
+          .map(mapGeoapifyAddress)
+          .filter((address) => address.label && ADDRESS_COUNTRIES.has(address.countryCode))
+      : [];
+
+    return res.json(suggestions);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 function isValidNorthAmericanPhone(phone) {
   const digits = String(phone || "").replace(/\D/g, "");

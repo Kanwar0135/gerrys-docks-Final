@@ -42,6 +42,9 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
   const [verifiedAddress, setVerifiedAddress] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [addressSuggestionError, setAddressSuggestionError] = useState('');
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth
@@ -118,6 +121,8 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     setPostalCode('');
     setCountry('');
     setVerifiedAddress('');
+    setAddressSuggestions([]);
+    setAddressSuggestionError('');
   };
 
   // Calculate live dynamic estimate
@@ -133,29 +138,57 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   }, 0);
   const totalEstimate = base + substrateSurcharge + depthSurcharge + accessoriesTotal;
 
-  const validateAddress = async () => {
-    try {
-      const response = await fetch(
-        `https://addressvalidation.googleapis.com/v1:validateAddress?key=${import.meta.env.VITE_GOOGLE_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            address: {
-              regionCode: country || 'CA',
-              addressLines: [streetAddress, city, province, postalCode].filter(Boolean),
-            },
-          }),
-        }
-      );
+  useEffect(() => {
+    const query = [streetAddress, city, province].filter(Boolean).join(' ').trim();
 
-      const data = await response.json();
-      if (data.result?.address?.formattedAddress) {
-        setVerifiedAddress(data.result.address.formattedAddress);
-      }
-    } catch (error) {
-      console.error('Address validation error:', error);
+    if (query.length < 3 || verifiedAddress) {
+      setAddressSuggestions([]);
+      setAddressSuggestionError('');
+      return undefined;
     }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setIsLoadingAddresses(true);
+      setAddressSuggestionError('');
+
+      try {
+        const response = await fetch(
+          `${QUOTE_API_URL}/address-suggestions?query=${encodeURIComponent(query)}`,
+          { signal: controller.signal }
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to load address suggestions.');
+        }
+
+        setAddressSuggestions(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setAddressSuggestions([]);
+          setAddressSuggestionError(error.message || 'Unable to load address suggestions.');
+        }
+      } finally {
+        setIsLoadingAddresses(false);
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [streetAddress, city, province, verifiedAddress]);
+
+  const handleAddressSuggestionSelect = (suggestion) => {
+    setStreetAddress(suggestion.streetAddress || suggestion.label || '');
+    setCity(suggestion.city || '');
+    setProvince(suggestion.province || '');
+    setPostalCode(suggestion.postalCode || '');
+    setCountry(suggestion.country || '');
+    setVerifiedAddress(suggestion.label || '');
+    setAddressSuggestions([]);
+    setAddressSuggestionError('');
   };
 
   const handleSubmit = async (e) => {
@@ -169,11 +202,9 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
 
     setIsSubmitting(true);
 
-    // Run address validation check before submitting quote
-    await validateAddress();
-
     if (!selectedProductData) {
       setSubmitStatus('Please select an available product before submitting the quote.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -425,16 +456,75 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: addressGridColumns, gap: '15px', marginBottom: '15px' }}>
-                <div>
+                <div style={{ position: 'relative' }}>
                   <label style={labelStyle}>Street Name / Number</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. 1301 16 Ave NW"
                     value={streetAddress}
-                    onChange={(e) => setStreetAddress(e.target.value)}
+                    autoComplete="off"
+                    aria-autocomplete="list"
+                    aria-expanded={addressSuggestions.length > 0}
+                    onChange={(e) => {
+                      setStreetAddress(e.target.value);
+                      setVerifiedAddress('');
+                    }}
                     style={inputStyle}
                   />
+                  {(isLoadingAddresses || addressSuggestions.length > 0 || addressSuggestionError) && (
+                    <div
+                      role="listbox"
+                      style={{
+                        position: 'absolute',
+                        zIndex: 20,
+                        top: 'calc(100% + 6px)',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: '#FFFFFF',
+                        color: '#0B1D33',
+                        border: '1px solid #CBD5E0',
+                        borderRadius: '8px',
+                        boxShadow: '0 12px 28px rgba(0,0,0,0.22)',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {isLoadingAddresses && (
+                        <div style={{ padding: '12px 14px', fontSize: '13px', color: '#4A5568' }}>
+                          Searching addresses...
+                        </div>
+                      )}
+
+                      {!isLoadingAddresses && addressSuggestionError && (
+                        <div style={{ padding: '12px 14px', fontSize: '13px', color: '#9B2C2C' }}>
+                          {addressSuggestionError}
+                        </div>
+                      )}
+
+                      {!isLoadingAddresses && !addressSuggestionError && addressSuggestions.map((suggestion) => (
+                        <button
+                          key={`${suggestion.label}-${suggestion.latitude}-${suggestion.longitude}`}
+                          type="button"
+                          role="option"
+                          onClick={() => handleAddressSuggestionSelect(suggestion)}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            padding: '11px 14px',
+                            border: 'none',
+                            borderBottom: '1px solid #EDF2F7',
+                            background: '#FFFFFF',
+                            color: '#0B1D33',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          {suggestion.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label style={labelStyle}>City</label>
@@ -443,7 +533,10 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                     required
                     placeholder="e.g. Calgary"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) => {
+                      setCity(e.target.value);
+                      setVerifiedAddress('');
+                    }}
                     style={inputStyle}
                   />
                 </div>
@@ -454,7 +547,10 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                     required
                     placeholder="e.g. AB"
                     value={province}
-                    onChange={(e) => setProvince(e.target.value)}
+                    onChange={(e) => {
+                      setProvince(e.target.value);
+                      setVerifiedAddress('');
+                    }}
                     style={inputStyle}
                   />
                 </div>
