@@ -22,6 +22,7 @@ function getHighestSeverity(categoriesAnalysis = []) {
 function getLanguageClient() {
   const foundryEndpoint = process.env.AZURE_FOUNDRY_PROJECT_ENDPOINT;
   const foundryApiKey = process.env.AZURE_FOUNDRY_API_KEY;
+  const foundryApiVersion = process.env.AZURE_FOUNDRY_API_VERSION || "2025-04-01-preview";
 
   if (!foundryEndpoint || !foundryApiKey) return null;
 
@@ -31,6 +32,8 @@ function getLanguageClient() {
     languageClient = new OpenAI({
       apiKey: foundryApiKey,
       baseURL: `${foundryEndpoint.replace(/\/$/, "")}/openai/v1`,
+      defaultQuery: { "api-version": foundryApiVersion },
+      defaultHeaders: { "api-key": foundryApiKey },
     });
   }
 
