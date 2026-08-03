@@ -2,6 +2,7 @@ const express = require("express");
 
 const { getClient } = require("../config/chat");
 const { modelName } = require("../config/model");
+const { isTextAllowed } = require("../services/contentSafetyService");
 
 const router = express.Router();
 const VALID_WIDGETS = new Set(["products", "quote", "admin", "contact", "none"]);
@@ -131,6 +132,18 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    const safetyResult = await isTextAllowed(text);
+
+    if (!safetyResult.safe) {
+      writeEvent(res, "widget", { widget: "none", filter: null, source: "content-safety" });
+      writeData(
+        res,
+        "Please avoid inappropriate or harmful language. I can help with Gerry's Docks products, quotes, and shoreline setup information."
+      );
+      res.write("data: [done]\n\n");
+      return res.end();
+    }
+
     const client = getClient();
     const apiResponse = await client.responses.create(buildAgentRequest(text));
 

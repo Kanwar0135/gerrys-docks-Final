@@ -2,6 +2,7 @@ const express = require("express");
 
 const { requireAdmin } = require("../middleware/requireAdmin");
 const { createQuote, getAllQuotes } = require("../services/quoteService");
+const { isTextAllowed } = require("../services/contentSafetyService");
 
 const router = express.Router();
 const ADDRESS_COUNTRIES = new Set(["ca", "us"]);
@@ -111,12 +112,36 @@ function validateQuote(quoteData) {
   return null;
 }
 
+function getQuoteModerationText(quoteData) {
+  const contact = quoteData.contact || {};
+
+  return [
+    quoteData.customerName || contact.name,
+    quoteData.location || contact.location,
+    quoteData.notes || contact.notes,
+    quoteData.projectDetails,
+    quoteData.message,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 router.post("/", async (req, res, next) => {
   try {
     const validationError = validateQuote(req.body);
 
     if (validationError) {
       return res.status(400).json({ error: validationError });
+    }
+
+    const moderationText = getQuoteModerationText(req.body);
+    const safetyResult = await isTextAllowed(moderationText);
+
+    if (!safetyResult.safe) {
+      return res.status(400).json({
+        error:
+          "Please avoid inappropriate or harmful language before submitting a quote request.",
+      });
     }
 
     const quote = await createQuote(req.body);
