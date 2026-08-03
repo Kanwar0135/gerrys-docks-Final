@@ -46,6 +46,14 @@ function parseJsonObject(text) {
   }
 }
 
+function hasTargetedProfanity(text) {
+  const normalized = String(text || "").toLowerCase();
+
+  return /\b(f+u+c+k+|f\W*u\W*c\W*k|bitch|asshole|idiot|moron|stupid)\b[\s,!.]*(you|u)\b|\b(you|u)\b[\s,!.]*(are|r)?[\s,!.]*(a\s+)?\b(f+u+c+k+|f\W*u\W*c\W*k|bitch|asshole|idiot|moron|stupid)\b/.test(
+    normalized
+  );
+}
+
 async function analyzeTextSafety(text) {
   const { endpoint, key, blockSeverity } = getContentSafetyConfig();
 
@@ -114,16 +122,27 @@ async function analyzeAbusiveLanguage(text) {
 }
 
 async function isTextAllowed(text) {
+  if (hasTargetedProfanity(text)) {
+    return {
+      safe: false,
+      reason: "Targeted abusive language detected",
+      source: "targeted-profanity-guard",
+    };
+  }
+
   try {
     const contentSafetyResult = await analyzeTextSafety(text);
-
     if (!contentSafetyResult.safe) {
       return contentSafetyResult;
     }
+  } catch (error) {
+    console.warn("Content Safety check skipped, using language classifier:", error.message);
+  }
 
+  try {
     return await analyzeAbusiveLanguage(text);
   } catch (error) {
-    console.warn("Content Safety check skipped:", error.message);
+    console.warn("Language classifier skipped:", error.message);
     return { safe: true, skipped: true, reason: error.message };
   }
 }
