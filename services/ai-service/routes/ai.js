@@ -2,10 +2,8 @@ const express = require("express");
 
 const { getClient } = require("../config/chat");
 const { modelName } = require("../config/model");
-const GerrysAssistantPrompt = require("../prompts/gerrys-assistant-prompt");
 
 const router = express.Router();
-const assistantPrompt = new GerrysAssistantPrompt();
 const VALID_WIDGETS = new Set(["products", "quote", "admin", "contact", "none"]);
 
 function parseWidgetLine(line) {
@@ -94,6 +92,30 @@ function streamLocalFallback(res, text, reason) {
   return res.end();
 }
 
+function buildAgentRequest(text) {
+  const agentName = process.env.AZURE_FOUNDRY_AGENT_NAME;
+  const agentVersion = process.env.AZURE_FOUNDRY_AGENT_VERSION;
+
+  if (!agentName || !agentVersion) {
+    return {
+      model: modelName,
+      input: text,
+    };
+  }
+
+  return {
+    model: modelName,
+    input: text,
+    extra_body: {
+      agent_reference: {
+        name: agentName,
+        version: agentVersion,
+        type: "agent_reference",
+      },
+    },
+  };
+}
+
 router.post("/", async (req, res) => {
   const text = String(req.body?.text || "").trim();
 
@@ -110,10 +132,7 @@ router.post("/", async (req, res) => {
 
   try {
     const client = getClient();
-    const apiResponse = await client.responses.create({
-      model: modelName,
-      input: assistantPrompt.generatePrompt(text),
-    });
+    const apiResponse = await client.responses.create(buildAgentRequest(text));
 
     const output = String(apiResponse.output_text || "").trim();
     const newlineIdx = output.indexOf("\n");
@@ -130,11 +149,12 @@ router.post("/", async (req, res) => {
     return res.end();
   } catch (error) {
     console.error("AI service error:", error);
-    writeEvent(res, "error", {
-      error: error.message || "AI service request failed",
-    });
-    res.write("data: [done]\n\n");
-    return res.end();
+
+    return streamLocalFallback(
+      res,
+      text,
+      "AI service is unavailable, so a local project response was used instead."
+    );
   }
 });
 

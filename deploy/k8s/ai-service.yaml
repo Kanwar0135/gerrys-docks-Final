@@ -21,6 +21,13 @@ spec:
           envFrom:
             - secretRef:
                 name: gerrys-docks-secrets
+          env:
+            - name: AZURE_FOUNDRY_MODEL
+              value: "gpt-5"
+            - name: AZURE_FOUNDRY_AGENT_NAME
+              value: "gerry-docks-ai"
+            - name: AZURE_FOUNDRY_AGENT_VERSION
+              value: "3"
           resources:
             requests:
               cpu: 100m
