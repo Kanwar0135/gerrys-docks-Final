@@ -35,6 +35,45 @@ function writeData(res, text) {
 function getLocalFallback(text) {
   const message = text.toLowerCase();
 
+  if (
+    message.includes("rough") ||
+    message.includes("wave") ||
+    message.includes("wavy") ||
+    message.includes("wind") ||
+    message.includes("storm") ||
+    message.includes("ice")
+  ) {
+    return {
+      widget: "products",
+      filter: "pontoon floating dock",
+      response:
+        "For rough water, the best recommendation is the 18 inch diameter pontoon floating dock from the client product list. Pontoon floats handle waves better because the water has to push higher before lifting the dock, and the client notes this style can be left in ice. For exact sizing and pricing, submit the quote form with shoreline and water-condition details.",
+    };
+  }
+
+  if (message.includes("summer") || message.includes("swim") || message.includes("seasonal")) {
+    return {
+      widget: "quote",
+      filter: "summer dock setup",
+      response:
+        "For a strong summer setup, start with the 8 x 16 Aluminum Dock Section, add a suitable access ramp, then include the Flip-Up Swim Ladder and Boat Bumper Package. That gives users a stable dock, easier water access, and protection for everyday boat use. Use the quote form for exact project pricing.",
+    };
+  }
+
+  if (
+    message.includes("popular") ||
+    message.includes("best") ||
+    message.includes("recommend") ||
+    message.includes("better")
+  ) {
+    return {
+      widget: "products",
+      filter: "recommended dock setup",
+      response:
+        "We do not have confirmed sales popularity data yet, but the 8 x 16 Aluminum Dock Section is the best general starting point for most users. It works as a stable core dock section, then users can add a ramp, swim ladder, or bumpers based on shoreline conditions.",
+    };
+  }
+
   if (message.includes("quote") || message.includes("price") || message.includes("cost")) {
     return {
       widget: "quote",
