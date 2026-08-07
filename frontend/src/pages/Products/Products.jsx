@@ -3,6 +3,45 @@ import { Link } from 'react-router-dom';
 
 const PRODUCT_API_URL = import.meta.env.VITE_PRODUCT_API_URL || 'http://localhost:5001/api/products';
 
+function getProductImage(product) {
+  if (product.img && product.img !== '/images/hero-dock.jpg') return product.img;
+
+  const id = String(product.id || '').toLowerCase();
+  const name = String(product.name || '').toLowerCase();
+  const cat = String(product.category || '').toLowerCase();
+
+  if (id.includes('pontoon') || name.includes('pontoon') || id.includes('fl-') || name.includes('float')) {
+    return '/images/shop-pontoon-mounting-detail.jpg';
+  }
+  if (id.includes('l-shape') || name.includes('l-shape') || name.includes('patio') || id.includes('lay-l')) {
+    return '/images/l-shape-dock-full-view.jpg';
+  }
+  if (id.includes('t-junction') || name.includes('t-junction') || name.includes('cleat') || id.includes('lay-t')) {
+    return '/images/dock-t-junction-cleats.jpg';
+  }
+  if (id.includes('hw-joint') || name.includes('joint') || name.includes('subframe') || name.includes('hardware')) {
+    return '/images/shop-frame-build.jpg';
+  }
+  if (id.includes('rock') || name.includes('rock') || name.includes('ramp') || name.includes('bracket')) {
+    return '/images/rock-mount-ramp-dock.jpg';
+  }
+  if (id.includes('ladder') || name.includes('ladder') || name.includes('swim')) {
+    return '/images/side-profile-floating-dock.jpg';
+  }
+  if (id.includes('bumper') || name.includes('bumper')) {
+    return '/images/installed-shoreline-dock.jpg';
+  }
+  if (id.includes('sec-16') || name.includes('straight') || name.includes('walkway') || cat === 'docks' || cat === 'sections') {
+    return '/images/straight-dock-water-view.jpg';
+  }
+
+  if (cat === 'ramps' || cat === 'layouts') return '/images/rock-mount-ramp-dock.jpg';
+  if (cat === 'accessories' || cat === 'hardware') return '/images/shop-frame-build.jpg';
+  if (cat === 'floats') return '/images/shop-pontoon-mounting-detail.jpg';
+
+  return '/images/straight-dock-water-view.jpg';
+}
+
 function formatBackendProduct(product) {
   const categoryMap = {
     Docks: 'sections',
@@ -16,7 +55,7 @@ function formatBackendProduct(product) {
     category: categoryMap[product.category] || String(product.category || 'sections').toLowerCase(),
     length: product.length || 'custom',
     price: Number.isFinite(Number(product.price)) ? `$${Number(product.price).toLocaleString()}` : 'Custom Quote',
-    img: product.img || '/images/hero-dock.jpg',
+    img: getProductImage(product),
     description: product.description || '',
     specs: product.specs || {
       alloy: product.category || 'CUSTOM',
