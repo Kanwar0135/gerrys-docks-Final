@@ -3,8 +3,10 @@ const express = require("express");
 const { getClient } = require("../config/chat");
 const { modelName } = require("../config/model");
 const { isTextAllowed } = require("../services/contentSafetyService");
+const GerrysAssistantPrompt = require("../prompts/gerrys-assistant-prompt");
 
 const router = express.Router();
+const promptBuilder = new GerrysAssistantPrompt();
 const VALID_WIDGETS = new Set(["products", "quote", "admin", "contact", "none"]);
 
 function parseWidgetLine(line) {
@@ -56,7 +58,7 @@ function getLocalFallback(text) {
       widget: "quote",
       filter: "summer dock setup",
       response:
-        "For a strong summer setup, start with the 8 x 16 Aluminum Dock Section, add a suitable access ramp, then include the Flip-Up Swim Ladder and Boat Bumper Package. That gives users a stable dock, easier water access, and protection for everyday boat use. Use the quote form for exact project pricing.",
+        "For a strong summer setup, start with the 8 x 16 Aluminum Dock Section ($3,295), add a 4 x 12 Hinged Access Ramp ($1,425), include the Flip-Up Swim Ladder ($325), and a Boat Bumper Package ($185). That gives you a stable dock, easy water access, and boat protection for summer. Use the quote form for exact project pricing.",
     };
   }
 
@@ -64,13 +66,14 @@ function getLocalFallback(text) {
     message.includes("popular") ||
     message.includes("best") ||
     message.includes("recommend") ||
-    message.includes("better")
+    message.includes("better") ||
+    message.includes("good")
   ) {
     return {
       widget: "products",
       filter: "recommended dock setup",
       response:
-        "We do not have confirmed sales popularity data yet, but the 8 x 16 Aluminum Dock Section is the best general starting point for most users. It works as a stable core dock section, then users can add a ramp, swim ladder, or bumpers based on shoreline conditions.",
+        "The 8 x 16 Aluminum Dock Section ($3,295) is the best starting point for most lakefront setups. Pair it with a 4 x 12 Hinged Access Ramp ($1,425) and Flip-Up Swim Ladder ($325) for a complete setup. For rough water, 18-inch Pontoon Floating Docks are recommended instead.",
     };
   }
 
@@ -88,7 +91,7 @@ function getLocalFallback(text) {
       widget: "products",
       filter: message.includes("ramp") ? "ramps" : message.includes("accessory") ? "accessories" : "docks",
       response:
-        "You can review Gerry's Docks products from the product catalog. The catalog is organized by docks, ramps, and accessories so users can compare available items before starting a quote request.",
+        "Gerry's Docks offers top product options: 8 x 16 Aluminum Dock Section ($3,295), 4 x 10 Shoreline Extension ($1,795), 4 x 12 Hinged Ramp ($1,425), 18-inch Pontoon Floating Docks for rough water, Flip-Up Swim Ladder ($325), and Boat Bumper Package ($185). Select any items to add to your quote request.",
     };
   }
 
@@ -132,30 +135,6 @@ function streamLocalFallback(res, text, reason) {
   return res.end();
 }
 
-function buildAgentRequest(text) {
-  const agentName = process.env.AZURE_FOUNDRY_AGENT_NAME;
-  const agentVersion = process.env.AZURE_FOUNDRY_AGENT_VERSION;
-
-  if (!agentName || !agentVersion) {
-    return {
-      model: modelName,
-      input: text,
-    };
-  }
-
-  return {
-    model: modelName,
-    input: text,
-    extra_body: {
-      agent_reference: {
-        name: agentName,
-        version: agentVersion,
-        type: "agent_reference",
-      },
-    },
-  };
-}
-
 router.post("/", async (req, res) => {
   const text = String(req.body?.text || "").trim();
 
@@ -184,9 +163,47 @@ router.post("/", async (req, res) => {
     }
 
     const client = getClient();
-    const apiResponse = await client.responses.create(buildAgentRequest(text));
+    const promptText = promptBuilder.generatePrompt(text);
 
-    const output = String(apiResponse.output_text || "").trim();
+    let outputText = "";
+    if (client.responses && typeof client.responses.create === "function") {
+      const apiResponse = await client.responses.create({
+        model: modelName,
+        input: promptText,
+      });
+
+      if (apiResponse.output_text) {
+        outputText = apiResponse.output_text;
+      } else if (Array.isArray(apiResponse.output)) {
+        const parts = [];
+        for (const item of apiResponse.output) {
+          if (item.content && Array.isArray(item.content)) {
+            for (const c of item.content) {
+              if (c.type === "output_text" && c.text) {
+                parts.push(c.text);
+              }
+            }
+          }
+        }
+        outputText = parts.join("\n");
+      }
+    } else if (client.chat && client.chat.completions) {
+      const completion = await client.chat.completions.create({
+        model: modelName,
+        messages: [{ role: "user", content: promptText }],
+      });
+      outputText = completion.choices?.[0]?.message?.content || "";
+    }
+
+    const output = String(outputText || "").trim();
+    if (!output) {
+      return streamLocalFallback(
+        res,
+        text,
+        "AI service returned empty response, so a local project response was used instead."
+      );
+    }
+
     const newlineIdx = output.indexOf("\n");
     const firstLine = newlineIdx === -1 ? output : output.slice(0, newlineIdx).trim();
     const responseText = newlineIdx === -1 ? output : output.slice(newlineIdx + 1).trim();

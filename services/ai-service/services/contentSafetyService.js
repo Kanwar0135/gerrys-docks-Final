@@ -22,16 +22,17 @@ function getHighestSeverity(categoriesAnalysis = []) {
 function getLanguageClient() {
   const foundryEndpoint = process.env.AZURE_FOUNDRY_PROJECT_ENDPOINT;
   const foundryApiKey = process.env.AZURE_FOUNDRY_API_KEY;
-  const foundryApiVersion = process.env.AZURE_FOUNDRY_API_VERSION || "2025-04-01-preview";
+  const foundryApiVersion = process.env.AZURE_FOUNDRY_API_VERSION || "v1";
 
   if (!foundryEndpoint || !foundryApiKey) return null;
 
   if (!languageClient) {
     const OpenAI = require("openai");
+    const cleanEndpoint = foundryEndpoint.replace(/\/responses\/?$/, "").replace(/\/$/, "");
 
     languageClient = new OpenAI({
       apiKey: foundryApiKey,
-      baseURL: `${foundryEndpoint.replace(/\/$/, "")}/openai/v1`,
+      baseURL: cleanEndpoint,
       defaultQuery: { "api-version": foundryApiVersion },
       defaultHeaders: { "api-key": foundryApiKey },
     });
@@ -100,22 +101,29 @@ async function analyzeAbusiveLanguage(text) {
     return { safe: true, skipped: true, reason: "Foundry language classifier is not configured" };
   }
 
+  const promptText = `Classify user text for a public business website. Return only JSON with keys unsafe:boolean and reason:string. Mark unsafe true for targeted insults, harassment, threats, hate, sexual content, self-harm, violence, or abusive profanity. Do not mark mild non-targeted frustration unsafe.\n\nUser text: ${text}`;
+
   const response = await client.responses.create({
     model: process.env.AZURE_FOUNDRY_MODEL || process.env.OPENAI_MODEL || DEFAULT_LANGUAGE_MODEL,
-    input: [
-      {
-        role: "system",
-        content:
-          "Classify user text for a public business website. Return only JSON with keys unsafe:boolean and reason:string. Mark unsafe true for targeted insults, harassment, threats, hate, sexual content, self-harm, violence, or abusive profanity. Do not mark mild non-targeted frustration unsafe.",
-      },
-      {
-        role: "user",
-        content: text,
-      },
-    ],
+    input: promptText,
   });
 
-  const result = parseJsonObject(response.output_text || "{}");
+  let rawText = response.output_text || "";
+  if (!rawText && Array.isArray(response.output)) {
+    const parts = [];
+    for (const item of response.output) {
+      if (item.content && Array.isArray(item.content)) {
+        for (const c of item.content) {
+          if (c.type === "output_text" && c.text) {
+            parts.push(c.text);
+          }
+        }
+      }
+    }
+    rawText = parts.join("\n");
+  }
+
+  const result = parseJsonObject(rawText || "{}");
 
   return {
     safe: !result?.unsafe,

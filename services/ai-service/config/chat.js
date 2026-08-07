@@ -9,9 +9,12 @@ function getClient() {
 
   if (!client) {
     if (foundryEndpoint && foundryApiKey) {
+      const cleanEndpoint = foundryEndpoint.replace(/\/responses\/?$/, "").replace(/\/$/, "");
       client = new OpenAI({
         apiKey: foundryApiKey,
-        baseURL: `${foundryEndpoint.replace(/\/$/, "")}/openai/v1`,
+        baseURL: cleanEndpoint,
+        defaultQuery: { "api-version": process.env.AZURE_FOUNDRY_API_VERSION || "v1" },
+        defaultHeaders: { "api-key": foundryApiKey },
       });
     } else if (openAiApiKey) {
       client = new OpenAI({
