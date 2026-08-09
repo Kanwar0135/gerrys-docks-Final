@@ -1,4 +1,5 @@
 const express = require("express");
+const Filter = require("bad-words");
 
 const { requireAdmin } = require("../middleware/requireAdmin");
 const {
@@ -10,6 +11,7 @@ const {
 } = require("../services/productService");
 
 const router = express.Router();
+const profanityFilter = new Filter();
 
 const PRODUCT_NAME_MAX = 40;
 const PRODUCT_DESC_MAX = 300;
@@ -43,11 +45,21 @@ function validateProduct(product) {
     return "Product name may only contain letters, numbers, spaces, hyphens, and basic punctuation — no special characters like @, #, $, !, or ?";
   }
 
+  // Profanity check on name
+  if (profanityFilter.isProfane(name)) {
+    return "Product name contains inappropriate language and cannot be saved";
+  }
+
   // --- Description Rules ---
   const description = String(product.description).trim();
 
   if (description.length > PRODUCT_DESC_MAX) {
     return `Product description cannot exceed ${PRODUCT_DESC_MAX} characters`;
+  }
+
+  // Profanity check on description
+  if (profanityFilter.isProfane(description)) {
+    return "Product description contains inappropriate language and cannot be saved";
   }
 
   // --- Price Rules ---

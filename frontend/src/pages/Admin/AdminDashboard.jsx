@@ -80,6 +80,7 @@ const AdminDashboard = () => {
   const [editingProductId, setEditingProductId] = useState('');
   const [productMessage, setProductMessage] = useState('');
   const [productNameError, setProductNameError] = useState('');
+  const [productDescError, setProductDescError] = useState('');
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth
   );
@@ -367,7 +368,26 @@ const AdminDashboard = () => {
   };
 
   const PRODUCT_NAME_MAX = 40;
+  const PRODUCT_DESC_MAX = 300;
   const ALLOWED_NAME_PATTERN = /^[a-zA-Z0-9 \-'&.,()]+$/;
+
+  // Comprehensive profanity word list (whole-word matching, case-insensitive)
+  const PROFANE_WORDS = [
+    'fuck','fuck','fuk','f\u00fcck','shit','sh1t','shyt','bitch','b1tch','bastard',
+    'asshole','ass','arse','cunt','cock','dick','d1ck','prick','pussy','twat',
+    'wanker','whore','slut','nigger','nigga','faggot','fag','retard','moron',
+    'idiot','imbecile','stupid','dumbass','jackass','jerk','piss','crap','damn',
+    'goddamn','hell','bullshit','horseshit','motherfucker','mf','wtf','stfu',
+    'kys','rape','kill yourself','go die','sex','porn','nude','naked',
+  ];
+
+  const containsProfanity = (text) => {
+    const lower = String(text).toLowerCase();
+    return PROFANE_WORDS.some((word) => {
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'i').test(lower);
+    });
+  };
 
   const validateProductName = (name) => {
     const trimmed = String(name).trim();
@@ -376,18 +396,26 @@ const AdminDashboard = () => {
     const letterCount = (trimmed.match(/[a-zA-Z]/g) || []).length;
     if (letterCount < 2) return 'Name must contain at least 2 letters (e.g. not "1@3#")';
     if (!ALLOWED_NAME_PATTERN.test(trimmed)) return 'No special characters allowed (@, #, $, !, ?, etc.)';
+    if (containsProfanity(trimmed)) return 'Product name contains inappropriate language';
+    return '';
+  };
+
+  const validateProductDesc = (desc) => {
+    const trimmed = String(desc).trim();
+    if (trimmed.length > PRODUCT_DESC_MAX) return `Description cannot exceed ${PRODUCT_DESC_MAX} characters`;
+    if (containsProfanity(trimmed)) return 'Description contains inappropriate language';
     return '';
   };
 
   const handleSaveProduct = async (event) => {
     event.preventDefault();
 
-    // Client-side name check before hitting the network
+    // Client-side checks before hitting the network
     const nameError = validateProductName(productForm.name);
-    if (nameError) {
-      setProductNameError(nameError);
-      return;
-    }
+    if (nameError) { setProductNameError(nameError); return; }
+
+    const descError = validateProductDesc(productForm.description);
+    if (descError) { setProductDescError(descError); return; }
 
     const token = getAdminToken();
     if (!token) {
@@ -426,6 +454,7 @@ const AdminDashboard = () => {
 
       setProductMessage(editingProductId ? 'Product updated.' : 'Product added.');
       setProductNameError('');
+      setProductDescError('');
       resetProductForm();
       loadProducts();
     } catch (error) {
@@ -1123,13 +1152,29 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>Description</label>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Description
+                    <span style={{ float: 'right', fontWeight: '400', color: productForm.description.length > 300 ? '#E53E3E' : productForm.description.length > 240 ? '#D97706' : '#A0AEC0', textTransform: 'none', fontSize: '10px' }}>
+                      {productForm.description.length}/300
+                    </span>
+                  </label>
                   <input
                     required
+                    maxLength={300}
+                    placeholder="Brief product description..."
                     value={productForm.description}
-                    onChange={(e) => setProductForm((current) => ({ ...current, description: e.target.value }))}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E0', boxSizing: 'border-box' }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setProductForm((current) => ({ ...current, description: val }));
+                      setProductDescError(validateProductDesc(val));
+                    }}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: `1px solid ${productDescError ? '#FC8181' : '#CBD5E0'}`, boxSizing: 'border-box', outline: 'none' }}
                   />
+                  {productDescError && (
+                    <span style={{ display: 'block', fontSize: '11px', color: '#E53E3E', marginTop: '4px', fontWeight: '600' }}>
+                      ⚠ {productDescError}
+                    </span>
+                  )}
                 </div>
                 <button
                   type="submit"
