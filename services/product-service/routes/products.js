@@ -11,11 +11,46 @@ const {
 
 const router = express.Router();
 
+const PRODUCT_NAME_MAX = 40;
+const PRODUCT_DESC_MAX = 300;
+// Allowed: letters, numbers, spaces, hyphens, apostrophes, ampersands, periods, commas, parentheses
+const ALLOWED_NAME_PATTERN = /^[a-zA-Z0-9 \-'&.,()]+$/;
+
 function validateProduct(product) {
   if (!product.name || !product.category || !product.description) {
     return "Name, category, and description are required";
   }
 
+  // --- Product Name Rules ---
+  const name = String(product.name).trim();
+
+  if (name.length === 0) {
+    return "Product name cannot be blank";
+  }
+
+  if (name.length > PRODUCT_NAME_MAX) {
+    return `Product name cannot exceed ${PRODUCT_NAME_MAX} characters`;
+  }
+
+  // Must contain at least 2 letters so names like "1@3#" or "AB1" alone don't fly
+  const letterCount = (name.match(/[a-zA-Z]/g) || []).length;
+  if (letterCount < 2) {
+    return "Product name must contain at least 2 letters";
+  }
+
+  // No special characters (@, #, $, !, ?, %, ^, *, etc.)
+  if (!ALLOWED_NAME_PATTERN.test(name)) {
+    return "Product name may only contain letters, numbers, spaces, hyphens, and basic punctuation — no special characters like @, #, $, !, or ?";
+  }
+
+  // --- Description Rules ---
+  const description = String(product.description).trim();
+
+  if (description.length > PRODUCT_DESC_MAX) {
+    return `Product description cannot exceed ${PRODUCT_DESC_MAX} characters`;
+  }
+
+  // --- Price Rules ---
   if (!Number.isFinite(Number(product.price)) || Number(product.price) < 0) {
     return "Price must be a valid number";
   }

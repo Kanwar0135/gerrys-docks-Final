@@ -79,6 +79,7 @@ const AdminDashboard = () => {
   });
   const [editingProductId, setEditingProductId] = useState('');
   const [productMessage, setProductMessage] = useState('');
+  const [productNameError, setProductNameError] = useState('');
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth
   );
@@ -365,8 +366,28 @@ const AdminDashboard = () => {
     setProductMessage('');
   };
 
+  const PRODUCT_NAME_MAX = 40;
+  const ALLOWED_NAME_PATTERN = /^[a-zA-Z0-9 \-'&.,()]+$/;
+
+  const validateProductName = (name) => {
+    const trimmed = String(name).trim();
+    if (!trimmed) return 'Product name is required';
+    if (trimmed.length > PRODUCT_NAME_MAX) return `Name cannot exceed ${PRODUCT_NAME_MAX} characters`;
+    const letterCount = (trimmed.match(/[a-zA-Z]/g) || []).length;
+    if (letterCount < 2) return 'Name must contain at least 2 letters (e.g. not "1@3#")';
+    if (!ALLOWED_NAME_PATTERN.test(trimmed)) return 'No special characters allowed (@, #, $, !, ?, etc.)';
+    return '';
+  };
+
   const handleSaveProduct = async (event) => {
     event.preventDefault();
+
+    // Client-side name check before hitting the network
+    const nameError = validateProductName(productForm.name);
+    if (nameError) {
+      setProductNameError(nameError);
+      return;
+    }
 
     const token = getAdminToken();
     if (!token) {
@@ -404,6 +425,7 @@ const AdminDashboard = () => {
       }
 
       setProductMessage(editingProductId ? 'Product updated.' : 'Product added.');
+      setProductNameError('');
       resetProductForm();
       loadProducts();
     } catch (error) {
@@ -1053,13 +1075,29 @@ const AdminDashboard = () => {
 
               <form onSubmit={handleSaveProduct} style={{ display: 'grid', gridTemplateColumns: productFormColumns, gap: '12px', alignItems: 'end', marginBottom: '20px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>Product Name</label>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Product Name
+                    <span style={{ float: 'right', fontWeight: '400', color: productForm.name.length > 40 ? '#E53E3E' : productForm.name.length > 32 ? '#D97706' : '#A0AEC0', textTransform: 'none', fontSize: '10px' }}>
+                      {productForm.name.length}/40
+                    </span>
+                  </label>
                   <input
                     required
+                    maxLength={40}
+                    placeholder="e.g. Cedar Floating Dock"
                     value={productForm.name}
-                    onChange={(e) => setProductForm((current) => ({ ...current, name: e.target.value }))}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E0', boxSizing: 'border-box' }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setProductForm((current) => ({ ...current, name: val }));
+                      setProductNameError(validateProductName(val));
+                    }}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: `1px solid ${productNameError ? '#FC8181' : '#CBD5E0'}`, boxSizing: 'border-box', outline: 'none' }}
                   />
+                  {productNameError && (
+                    <span style={{ display: 'block', fontSize: '11px', color: '#E53E3E', marginTop: '4px', fontWeight: '600' }}>
+                      ⚠ {productNameError}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#718096', marginBottom: '5px', textTransform: 'uppercase' }}>Category</label>
