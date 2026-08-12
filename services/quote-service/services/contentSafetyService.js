@@ -1,5 +1,5 @@
 const CONTENT_SAFETY_API_VERSION = "2024-09-01";
-const DEFAULT_BLOCK_SEVERITY = 4;
+const DEFAULT_BLOCK_SEVERITY = 2;
 const DEFAULT_LANGUAGE_MODEL = "gpt-5";
 
 let languageClient;
