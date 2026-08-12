@@ -21,7 +21,7 @@ const PROFANE_WORDS = [
   'fuck','fuk','shit','sh1t','shyt','bitch','b1tch','bastard',
   'asshole','ass','arse','cunt','cock','dick','d1ck','prick','pussy','twat',
   'wanker','whore','slut','nigger','nigga','faggot','fag','retard','moron',
-  'idiot','imbecile','dumbass','jackass','piss','crap','goddamn',
+  'idiot','imbecile','stupid','dumbass','jackass','piss','crap','goddamn',
   'bullshit','horseshit','motherfucker','kys','rape',
   'kill yourself','go die','porn','nude',
 ];

@@ -132,12 +132,26 @@ async function analyzeAbusiveLanguage(text) {
   };
 }
 
+function hasGeneralProfanity(text) {
+  const normalized = String(text || "").toLowerCase();
+  const profaneWords = [
+    'fuck','fuk','shit','sh1t','shyt','bitch','b1tch','bastard',
+    'asshole','ass','arse','cunt','cock','dick','d1ck','prick','pussy','twat',
+    'wanker','whore','slut','nigger','nigga','faggot','fag','retard','moron',
+    'idiot','imbecile','stupid','dumbass','jackass','piss','crap','goddamn',
+    'bullshit','horseshit','motherfucker','kys','rape'
+  ];
+  return profaneWords.some(word => {
+    return new RegExp(`\\b${word}\\b`, 'i').test(normalized);
+  });
+}
+
 async function isTextAllowed(text) {
-  if (hasTargetedProfanity(text)) {
+  if (hasTargetedProfanity(text) || hasGeneralProfanity(text)) {
     return {
       safe: false,
-      reason: "Targeted abusive language detected",
-      source: "targeted-profanity-guard",
+      reason: "Inappropriate or offensive language detected",
+      source: "profanity-guard",
     };
   }
 
