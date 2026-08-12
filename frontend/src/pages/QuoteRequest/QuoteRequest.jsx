@@ -16,6 +16,30 @@ function isValidNorthAmericanPhone(phone) {
   return true;
 }
 
+// Profanity word list — whole-word matching, case-insensitive
+const PROFANE_WORDS = [
+  'fuck','fuk','shit','sh1t','shyt','bitch','b1tch','bastard',
+  'asshole','ass','arse','cunt','cock','dick','d1ck','prick','pussy','twat',
+  'wanker','whore','slut','nigger','nigga','faggot','fag','retard','moron',
+  'idiot','imbecile','dumbass','jackass','piss','crap','goddamn',
+  'bullshit','horseshit','motherfucker','kys','rape',
+  'kill yourself','go die','porn','nude',
+];
+
+function containsProfanity(text) {
+  const lower = String(text).toLowerCase();
+  return PROFANE_WORDS.some((word) => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'i').test(lower);
+  });
+}
+
+function validateNotes(notes) {
+  if (containsProfanity(notes)) return 'Please keep your notes professional — no offensive language.';
+  if (String(notes).length > 500) return 'Notes cannot exceed 500 characters.';
+  return '';
+}
+
 export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const location = useLocation();
   
@@ -34,6 +58,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const [clientPhone, setClientPhone] = useState('');
   const [submitStatus, setSubmitStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notesError, setNotesError] = useState('');
 
   // Address State
   const [streetAddress, setStreetAddress] = useState('');
@@ -123,6 +148,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     setVerifiedAddress('');
     setAddressSuggestions([]);
     setAddressSuggestionError('');
+    setNotesError('');
   };
 
   // Calculate live dynamic estimate
@@ -197,6 +223,12 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
 
     if (!isValidNorthAmericanPhone(clientPhone)) {
       setSubmitStatus('Please enter a valid 10-digit phone number, such as (705) 477-2872.');
+      return;
+    }
+
+    const notesValidationError = validateNotes(additionalNotes);
+    if (notesValidationError) {
+      setNotesError(notesValidationError);
       return;
     }
 
@@ -556,7 +588,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px', marginTop: '15px' }}>
                 <div>
                   <label style={labelStyle}>Postal / ZIP Code</label>
                   <input
@@ -613,8 +645,6 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                     placeholder="(705) 477-2872"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
-                    pattern="^(\\+?1[\\s.-]?)?(\\(?[2-9][0-9]{2}\\)?[\\s.-]?)[2-9][0-9]{2}[\\s.-]?[0-9]{4}$"
-                    title="Enter a valid 10-digit phone number, such as (705) 477-2872."
                     style={inputStyle}
                   />
                 </div>
@@ -639,6 +669,11 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                   onChange={(e) => setAdditionalNotes(e.target.value)}
                   style={{ ...inputStyle, resize: 'vertical' }}
                 />
+                {notesError && (
+                  <div style={{ color: '#E53E3E', fontSize: '12px', marginTop: '5px', fontWeight: 'bold' }}>
+                    {notesError}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 const express = require("express");
-const Filter = require("bad-words");
+const { Filter } = require("bad-words");
 
 const { requireAdmin } = require("../middleware/requireAdmin");
 const {
