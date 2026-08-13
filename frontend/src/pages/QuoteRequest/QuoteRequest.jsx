@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL || 'http://localhost:5002/api/quotes';
@@ -61,15 +61,17 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   const [notesError, setNotesError] = useState('');
 
   // Address State
-  const [streetAddress, setStreetAddress] = useState('');
+  const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
   const [verifiedAddress, setVerifiedAddress] = useState('');
-  const [addressSuggestions, setAddressSuggestions] = useState([]);
-  const [addressSuggestionError, setAddressSuggestionError] = useState('');
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+
+  // Custom Autocomplete Suggestions State
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionWrapperRef = useRef(null);
   
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window === 'undefined' ? 1200 : window.innerWidth
@@ -119,7 +121,18 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     }
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    function handleClickOutside(event) {
+      if (suggestionWrapperRef.current && !suggestionWrapperRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   // Handle Accessory multi-select toggle
@@ -140,14 +153,14 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
     setClientName('');
     setClientEmail('');
     setClientPhone('');
-    setStreetAddress('');
+    setStreet('');
     setCity('');
     setProvince('');
     setPostalCode('');
     setCountry('');
     setVerifiedAddress('');
-    setAddressSuggestions([]);
-    setAddressSuggestionError('');
+    setSuggestions([]);
+    setShowSuggestions(false);
     setNotesError('');
   };
 
@@ -164,57 +177,72 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
   }, 0);
   const totalEstimate = base + substrateSurcharge + depthSurcharge + accessoriesTotal;
 
-  useEffect(() => {
-    const query = [streetAddress, city, province].filter(Boolean).join(' ').trim();
+  // Fetch address suggestions using Photon by Komoot (CORS-friendly frontend alternative)
+  const handleStreetChange = async (e) => {
+    const value = e.target.value;
+    setStreet(value);
 
-    if (query.length < 3 || verifiedAddress) {
-      setAddressSuggestions([]);
-      setAddressSuggestionError('');
-      return undefined;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(async () => {
-      setIsLoadingAddresses(true);
-      setAddressSuggestionError('');
-
+    if (value.length > 2) {
       try {
         const response = await fetch(
-          `${QUOTE_API_URL}/address-suggestions?query=${encodeURIComponent(query)}`,
-          { signal: controller.signal }
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(value)}&limit=5`
         );
-        const data = await response.json();
+        const rawData = await response.json();
+        
+        // Map Photon's GeoJSON structure to match your component expectation
+        const formattedData = (rawData.features || []).map(feature => {
+          const props = feature.properties || {};
+          const displayName = [
+            props.housenumber,
+            props.street,
+            props.city,
+            props.state,
+            props.country
+          ].filter(Boolean).join(', ');
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Unable to load address suggestions.');
-        }
+          return {
+            display_name: displayName,
+            address: {
+              house_number: props.housenumber || '',
+              road: props.street || '',
+              city: props.city || props.town || props.village || '',
+              state: props.state || '',
+              postcode: props.postcode || '',
+              country: props.country || ''
+            }
+          };
+        });
 
-        setAddressSuggestions(Array.isArray(data) ? data : []);
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          setAddressSuggestions([]);
-          setAddressSuggestionError(error.message || 'Unable to load address suggestions.');
+        if (formattedData.length > 0) {
+          setSuggestions(formattedData);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+          setShowSuggestions(false);
         }
-      } finally {
-        setIsLoadingAddresses(false);
+      } catch (err) {
+        console.error('Error fetching address suggestions:', err);
       }
-    }, 350);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [streetAddress, city, province, verifiedAddress]);
+  // Handle selecting an address item from suggestions
+  const handleSelectPrediction = (item) => {
+    const addr = item.address || {};
+    const houseNumber = addr.house_number || '';
+    const road = addr.road || '';
+    const fullStreet = `${houseNumber} ${road}`.trim() || item.display_name.split(',')[0];
 
-  const handleAddressSuggestionSelect = (suggestion) => {
-    setStreetAddress(suggestion.streetAddress || suggestion.label || '');
-    setCity(suggestion.city || '');
-    setProvince(suggestion.province || '');
-    setPostalCode(suggestion.postalCode || '');
-    setCountry(suggestion.country || '');
-    setVerifiedAddress(suggestion.label || '');
-    setAddressSuggestions([]);
-    setAddressSuggestionError('');
+    setStreet(fullStreet);
+    setCity(addr.city || '');
+    setProvince(addr.state || '');
+    setPostalCode(addr.postcode || '');
+    setCountry(addr.country || '');
+    setVerifiedAddress(item.display_name);
+    setShowSuggestions(false);
   };
 
   const handleSubmit = async (e) => {
@@ -240,7 +268,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
       return;
     }
 
-    const fullLocation = [streetAddress, city, province, postalCode, country]
+    const fullLocation = [street, city, province, postalCode, country]
       .filter(Boolean)
       .join(', ');
 
@@ -488,74 +516,53 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: addressGridColumns, gap: '15px', marginBottom: '15px' }}>
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} ref={suggestionWrapperRef}>
                   <label style={labelStyle}>Street Name / Number</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. 1301 16 Ave NW"
-                    value={streetAddress}
-                    autoComplete="off"
-                    aria-autocomplete="list"
-                    aria-expanded={addressSuggestions.length > 0}
-                    onChange={(e) => {
-                      setStreetAddress(e.target.value);
-                      setVerifiedAddress('');
-                    }}
+                    value={street}
+                    onChange={handleStreetChange}
+                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                     style={inputStyle}
                   />
-                  {(isLoadingAddresses || addressSuggestions.length > 0 || addressSuggestionError) && (
-                    <div
-                      role="listbox"
-                      style={{
-                        position: 'absolute',
-                        zIndex: 20,
-                        top: 'calc(100% + 6px)',
-                        left: 0,
-                        right: 0,
-                        backgroundColor: '#FFFFFF',
-                        color: '#0B1D33',
-                        border: '1px solid #CBD5E0',
-                        borderRadius: '8px',
-                        boxShadow: '0 12px 28px rgba(0,0,0,0.22)',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      {isLoadingAddresses && (
-                        <div style={{ padding: '12px 14px', fontSize: '13px', color: '#4A5568' }}>
-                          Searching addresses...
-                        </div>
-                      )}
 
-                      {!isLoadingAddresses && addressSuggestionError && (
-                        <div style={{ padding: '12px 14px', fontSize: '13px', color: '#9B2C2C' }}>
-                          {addressSuggestionError}
-                        </div>
-                      )}
-
-                      {!isLoadingAddresses && !addressSuggestionError && addressSuggestions.map((suggestion) => (
-                        <button
-                          key={`${suggestion.label}-${suggestion.latitude}-${suggestion.longitude}`}
-                          type="button"
-                          role="option"
-                          onClick={() => handleAddressSuggestionSelect(suggestion)}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      zIndex: 9999,
+                      margin: '4px 0 0 0',
+                      padding: 0,
+                      listStyle: 'none',
+                      backgroundColor: '#0F253F',
+                      border: '1px solid #3B5E8C',
+                      borderRadius: '6px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                      maxHeight: '220px',
+                      overflowY: 'auto'
+                    }}>
+                      {suggestions.map((item, idx) => (
+                        <li
+                          key={idx}
+                          onClick={() => handleSelectPrediction(item)}
                           style={{
-                            display: 'block',
-                            width: '100%',
-                            padding: '11px 14px',
-                            border: 'none',
-                            borderBottom: '1px solid #EDF2F7',
-                            background: '#FFFFFF',
-                            color: '#0B1D33',
-                            textAlign: 'left',
+                            padding: '10px 14px',
+                            color: '#FFFFFF',
+                            fontSize: '13px',
                             cursor: 'pointer',
-                            fontSize: '13px'
+                            borderTop: '1px solid #1E3A5F'
                           }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1E3E66'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          {suggestion.label}
-                        </button>
+                          {item.display_name}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   )}
                 </div>
                 <div>
@@ -565,10 +572,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                     required
                     placeholder="e.g. Calgary"
                     value={city}
-                    onChange={(e) => {
-                      setCity(e.target.value);
-                      setVerifiedAddress('');
-                    }}
+                    onChange={(e) => setCity(e.target.value)}
                     style={inputStyle}
                   />
                 </div>
@@ -579,16 +583,13 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
                     required
                     placeholder="e.g. AB"
                     value={province}
-                    onChange={(e) => {
-                      setProvince(e.target.value);
-                      setVerifiedAddress('');
-                    }}
+                    onChange={(e) => setProvince(e.target.value)}
                     style={inputStyle}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px', marginTop: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: twoColumnGrid, gap: '15px' }}>
                 <div>
                   <label style={labelStyle}>Postal / ZIP Code</label>
                   <input
@@ -615,7 +616,7 @@ export default function QuoteRequest({ userLoggedIn, triggerLoginPrompt }) {
 
               {verifiedAddress && (
                 <div style={{ marginTop: '10px', fontSize: '13px', color: '#4BB543', fontWeight: 'bold' }}>
-                  ✅ Verified: {verifiedAddress}
+                  ✅ Selected: {verifiedAddress}
                 </div>
               )}
             </div>

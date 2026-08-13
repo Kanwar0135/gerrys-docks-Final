@@ -14,6 +14,7 @@ function NavigationBar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Auth Tab Control: 'login' or 'signup'
   const [authTab, setAuthTab] = useState('login');
@@ -47,6 +48,11 @@ function NavigationBar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleKeyboardNavigation = (event) => {
@@ -94,7 +100,7 @@ function NavigationBar() {
   };
 
   // Helper function to render stylish navigation pill buttons with active state indication
-  const renderNavLink = (path, label, id) => {
+  const renderNavLink = (path, label, id, isMobile = false) => {
     const isHovered = hoverBtn === id;
     const isActive = location.pathname === path;
 
@@ -108,7 +114,7 @@ function NavigationBar() {
           textDecoration: 'none',
           fontWeight: '600',
           fontSize: '13px',
-          padding: '8px 14px',
+          padding: isMobile ? '12px 16px' : '8px 14px',
           borderRadius: '6px',
           backgroundColor: isActive
             ? 'var(--timber-accent, #C25E14)'
@@ -117,9 +123,11 @@ function NavigationBar() {
               : 'var(--card-bg, rgba(255, 255, 255, 0.05))',
           border: '1px solid',
           borderColor: isActive || isHovered ? 'var(--timber-accent, #C25E14)' : 'var(--border-color, rgba(255, 255, 255, 0.15))',
-          transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+          transform: !isMobile && isHovered ? 'translateY(-2px)' : 'translateY(0)',
           boxShadow: isHovered || isActive ? '0 4px 10px rgba(0,0,0,0.2)' : 'none',
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: isMobile ? 'block' : 'inline-block',
+          textAlign: isMobile ? 'center' : 'left'
         }}
       >
         {label}
@@ -193,8 +201,8 @@ function NavigationBar() {
           </span>
         </Link>
 
-        {/* Navigation Links, Theme Switcher & Sign In Button */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Desktop Navigation Links, Theme Switcher & Sign In Button */}
+        <nav className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {renderNavLink('/', 'Home', 'nav-home')}
           {renderNavLink('/products', 'Catalog', 'nav-catalog')}
           {renderNavLink('/specs', 'Pricing & Specs', 'nav-specs')}
@@ -248,7 +256,118 @@ function NavigationBar() {
             </button>
           )}
         </nav>
+
+        {/* Mobile Control Area (Theme Toggle + Hamburger Menu Button) */}
+        <div className="mobile-controls" style={{ display: 'none', alignItems: 'center', gap: '10px' }}>
+          <ThemeToggle />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--timber-accent, #C25E14)',
+              borderRadius: '6px',
+              color: '#FFFFFF',
+              cursor: 'pointer',
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {mobileMenuOpen ? (
+                <>
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
       </header>
+
+      {/* MOBILE DROP-DOWN MENU DRAWER */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: 'fixed',
+          top: '70px',
+          left: 0,
+          right: 0,
+          backgroundColor: 'var(--navy-brand, #0B1D33)',
+          borderBottom: '2px solid var(--timber-accent, #C25E14)',
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          zIndex: 999,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.4)'
+        }}>
+          {renderNavLink('/', 'Home', 'm-home', true)}
+          {renderNavLink('/products', 'Catalog', 'm-catalog', true)}
+          {renderNavLink('/specs', 'Pricing & Specs', 'm-specs', true)}
+          {renderNavLink('/quote', 'Request Quote', 'm-quote', true)}
+          {renderNavLink('/admin', 'Admin Console', 'm-admin', true)}
+
+          <div style={{ paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+            {userLoggedIn ? (
+              <button 
+                onClick={() => { setUserLoggedIn(false); setMobileMenuOpen(false); alert('Successfully logged out.'); }}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--timber-accent, #C25E14)',
+                  color: '#FFFFFF',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  textAlign: 'center'
+                }}
+              >
+                Sign Out
+              </button>
+            ) : (
+              <button 
+                onClick={() => { setAuthTab('login'); setShowLoginModal(true); setMobileMenuOpen(false); }}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'var(--timber-accent, #C25E14)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  textAlign: 'center'
+                }}
+              >
+                Sign In
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CSS Media Query Injection for Responsive Display */}
+      <style>{`
+        @media (max-width: 900px) {
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-controls {
+            display: flex !important;
+          }
+        }
+      `}</style>
 
       {/* COMPREHENSIVE SIGN IN & SIGN UP MODAL */}
       {showLoginModal && (
