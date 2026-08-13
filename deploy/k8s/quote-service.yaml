@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quote-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quote-service
+  template:
+    metadata:
+      labels:
+        app: quote-service
+    spec:
+      containers:
+        - name: quote-service
+          image: gerrydocksacr.azurecr.io/quote-service:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5002
+          envFrom:
+            - secretRef:
+                name: gerrys-docks-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quote-service
+spec:
+  type: ClusterIP
+  selector:
+    app: quote-service
+  ports:
+    - port: 5002
+      targetPort: 5002

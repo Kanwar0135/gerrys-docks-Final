@@ -1,0 +1,43 @@
+services:
+  product-service:
+    build: ./services/product-service
+    image: gerrys-docks/product-service:v1
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./services/product-service/.env
+
+  quote-service:
+    build: ./services/quote-service
+    image: gerrys-docks/quote-service:v1
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./services/quote-service/.env
+
+  admin-service:
+    build: ./services/admin-service
+    image: gerrys-docks/admin-service:v1
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./services/admin-service/.env
+
+  ai-service:
+    build: ./services/ai-service
+    image: gerrys-docks/ai-service:v1
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./services/ai-service/.env
+
+  frontend:
+    build: ./frontend
+    image: gerrys-docks/frontend:v1
+    ports:
+      - "8080:80"
+    depends_on:
+      - product-service
+      - quote-service
+      - admin-service
+      - ai-service

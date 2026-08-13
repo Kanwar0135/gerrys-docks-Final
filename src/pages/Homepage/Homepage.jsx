@@ -39,7 +39,7 @@ export default function Homepage() {
       title: 'L-Shape Patio Expansions',
       desc: 'Features multi-hinge assemblies, heavy corner brackets, and integrated side bumpers for expanded deck seating and water access.',
       link: '/products?category=layouts',
-      img: '/images/hero-dock.jpg'
+      img: '/images/l-shape-dock-full-view.jpg'
     },
     'T-Junction & Custom Layouts': {
       title: 'T-Junction & Custom Layouts',
@@ -310,7 +310,7 @@ export default function Homepage() {
                 }}
               >
                 <div style={{ height: '220px', backgroundColor: '#1A2E45', overflow: 'hidden' }}>
-                  <img src="/images/hero-dock.jpg" alt="L-Shape Layouts" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src="/images/l-shape-dock-full-view.jpg" alt="L-Shape Layouts" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div style={{ padding: '28px' }}>
                   <h3 style={{ fontSize: '22px', color: '#FFFFFF', fontWeight: '700', marginBottom: '12px' }}>L-Shape Patio Expansions</h3>

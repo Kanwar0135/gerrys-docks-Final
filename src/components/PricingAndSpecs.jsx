@@ -24,7 +24,7 @@ const dockConfigurations = [
     title: 'L-Shape Expansion Layout',
     badge: 'Best-Seller',
     description: 'Provides a spacious patio platform at the end for seating, swimming, and boat tie-ups.',
-    image: '/images/hero-dock.jpg',
+    image: '/images/l-shape-dock-full-view.jpg',
     specs: [
       'Multi-Section Heavy Hinged Joints',
       'Expanded Freeboard Stability',

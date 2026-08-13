@@ -1,0 +1,106 @@
+name: Build and deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  ACR_NAME: gerrydocksacr
+  ACR_LOGIN_SERVER: gerrydocksacr.azurecr.io
+  RESOURCE_GROUP: rg-anmol.kanwar1-3131
+  AKS_CLUSTER_NAME: gerrydocksaks
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Login to Azure Container Registry
+        run: echo "${{ secrets.ACR_PASSWORD }}" | docker login $ACR_LOGIN_SERVER -u "${{ secrets.ACR_USERNAME }}" --password-stdin
+
+      - name: Build and push frontend image
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/frontend:$IMAGE_TAG ./frontend
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/frontend:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+      - name: Build and push product service image
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/product-service:$IMAGE_TAG ./services/product-service
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/product-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+      - name: Build and push quote service image
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG ./services/quote-service
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+      - name: Build and push admin service image
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG ./services/admin-service
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+      - name: Build and push AI service image
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG ./services/ai-service
+          for attempt in 1 2 3; do
+            docker push $ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Docker push failed. Retrying in 15 seconds..."
+            sleep 15
+          done
+
+      - name: Connect kubectl to AKS
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_B64 }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl get nodes
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f ./deploy/k8s/product-service.yaml
+          kubectl apply -f ./deploy/k8s/quote-service.yaml
+          kubectl apply -f ./deploy/k8s/admin-service.yaml
+          kubectl apply -f ./deploy/k8s/ai-service.yaml
+          kubectl apply -f ./deploy/k8s/frontend.yaml
+
+      - name: Update AKS deployments with new images
+        run: |
+          kubectl set image deployment/frontend frontend=$ACR_LOGIN_SERVER/frontend:$IMAGE_TAG
+          kubectl set image deployment/product-service product-service=$ACR_LOGIN_SERVER/product-service:$IMAGE_TAG
+          kubectl set image deployment/quote-service quote-service=$ACR_LOGIN_SERVER/quote-service:$IMAGE_TAG
+          kubectl set image deployment/admin-service admin-service=$ACR_LOGIN_SERVER/admin-service:$IMAGE_TAG
+          kubectl set image deployment/ai-service ai-service=$ACR_LOGIN_SERVER/ai-service:$IMAGE_TAG
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/frontend --timeout=180s
+          kubectl rollout status deployment/product-service --timeout=180s
+          kubectl rollout status deployment/quote-service --timeout=180s
+          kubectl rollout status deployment/admin-service --timeout=180s
+          kubectl rollout status deployment/ai-service --timeout=180s
