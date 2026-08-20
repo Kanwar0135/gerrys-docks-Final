@@ -67,6 +67,27 @@ function getProductImage(product) {
   const name = String(product.name || '').toLowerCase();
   const cat = String(product.category || '').toLowerCase();
 
+  // Specific product mappings for unique database items
+  if (id.includes('wheel') || name.includes('wheel')) {
+    return '/images/delivery-trailer.jpg';
+  }
+  if (id.includes('bench') || name.includes('bench')) {
+    return '/images/hero-dock.jpg';
+  }
+  if (id.includes('ramp-4x20') || (name.includes('20') && name.includes('ramp'))) {
+    return '/images/rock-mount-ramp-dock.jpg';
+  }
+  if (id.includes('ramp-4x12') || (name.includes('12') && name.includes('ramp'))) {
+    return '/images/red-cabin-dock.jpg';
+  }
+  if (id.includes('dock-8x16') || (name.includes('8') && name.includes('16') && name.includes('dock'))) {
+    return '/images/straight-dock-water-view.jpg';
+  }
+  if (id.includes('dock-4x10') || (name.includes('4') && name.includes('10') && name.includes('dock'))) {
+    return '/images/water-floating-dock-end.jpg';
+  }
+
+  // Generic keyword fallback rules
   if (id.includes('pontoon') || name.includes('pontoon') || id.includes('fl-') || name.includes('float')) {
     return '/images/shop-pontoon-mounting-detail.jpg';
   }
